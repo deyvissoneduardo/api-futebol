@@ -1,0 +1,118 @@
+# Padrões de Código
+
+## Java
+
+### Nomenclatura
+
+- **Classes**: PascalCase (ex: `UserService`)
+- **Métodos**: camelCase (ex: `findByEmailAndTenantId`)
+- **Constantes**: UPPER_SNAKE_CASE (ex: `MAX_RETRY_ATTEMPTS`)
+- **Packages**: lowercase (ex: `br.com.futebol.domain.user`)
+
+### Entidades JPA
+
+```java
+@Entity
+@Table(name = "nome_tabela")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class NomeEntidade extends PanacheEntityBase {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        OffsetDateTime now = OffsetDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = OffsetDateTime.now();
+    }
+}
+```
+
+### Repositories
+
+```java
+@ApplicationScoped
+public class XxxRepository implements PanacheRepositoryBase<Xxx, UUID> {
+
+    // SEMPRE filtrar
+    public Optional<Xxx> findById(UUID id) {
+        return find("id = ?1", id).firstResultOptional();
+    }
+}
+```
+
+### Services
+
+```java
+@ApplicationScoped
+public class XxxService {
+
+    private static final Logger LOG = Logger.getLogger(XxxService.class);
+
+    @Inject
+    XxxRepository repository;
+
+}
+```
+
+### Resources (REST)
+
+```java
+@Path("/api/xxx")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
+@Tag(name = "Nome", description = "Descrição")
+public class XxxResource {
+
+    @GET
+    @RolesAllowed({"ADMIN", "SUPER_ADMIN"})
+    @Operation(summary = "Listar", description = "Descrição detalhada")
+    @APIResponses({
+        @APIResponse(responseCode = "200", description = "Sucesso"),
+        @APIResponse(responseCode = "401", description = "Não autenticado")
+    })
+    public Response list() {
+        // implementação
+    }
+}
+```
+
+### DTOs
+
+- Prefixar com `Request` para entrada (ex: `LoginRequest`)
+- Prefixar com `Response` para saída (ex: `UserResponse`)
+- Usar `@Valid` nos parâmetros de entrada
+- Usar anotações de validação (`@NotBlank`, `@Email`, etc)
+
+## Lombok
+
+Usar sempre:
+- `@Data` para DTOs simples
+- `@Getter`, `@Setter`, `@Builder`, `@NoArgsConstructor`, `@AllArgsConstructor` para entidades
+- `@SuperBuilder` para classes com herança
+
+## Logging
+
+```java
+private static final Logger LOG = Logger.getLogger(NomeDaClasse.class);
+
+LOG.warnf("Aviso: %s", mensagem);
+LOG.errorf("Erro: %s", e.getMessage());
+```

@@ -1,0 +1,53 @@
+# Tratamento de Exceções
+
+## Hierarquia de Exceções
+
+| Exceção | HTTP Status | Uso |
+|---------|-------------|-----|
+| `BusinessException` | 400 | Erros de regras de negócio |
+| `ResourceNotFoundException` | 404 | Recurso não encontrado |
+| `UnauthorizedException` | 401 | Não autenticado |
+| `ForbiddenException` | 403 | Sem permissão |
+| `DomainInactiveException` | 403 | Domínio inativo |
+
+## Criando Exceções
+
+```java
+// Erro de negócio
+throw new BusinessException("Mensagem descritiva do erro");
+
+// Recurso não encontrado
+throw new ResourceNotFoundException("User", userId);
+
+// Não autorizado
+throw new UnauthorizedException("Credenciais inválidas");
+
+// Sem permissão
+throw new ForbiddenException("Acesso negado a este recurso");
+```
+
+## Padrão de Validação
+
+```java
+User user = userRepository.findById(id)
+    .orElseThrow(() -> new ResourceNotFoundException("User", id));
+
+if (!user.isActive()) {
+    throw new BusinessException("Usuário inativo");
+}
+```
+
+## Mensagens de Erro
+
+- Mensagens devem ser claras e em português
+- Não expor detalhes técnicos ao usuário
+- Logar detalhes técnicos com `LOG.errorf()`
+
+```java
+try {
+    // operação
+} catch (Exception e) {
+    LOG.errorf("Erro ao processar: %s", e.getMessage());
+    throw new BusinessException("Erro ao processar operação");
+}
+```

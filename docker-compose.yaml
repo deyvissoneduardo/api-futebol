@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: futebol-postgres
+    environment:
+      POSTGRES_USER: futebol
+      POSTGRES_PASSWORD: futebol123
+      POSTGRES_DB: futebol_hml
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - futebol-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U futebol -d futebol_hml"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: futebol-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@futebol.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - futebol-network
+
+volumes:
+  postgres_data:
+
+networks:
+  futebol-network:
+    driver: bridge
+

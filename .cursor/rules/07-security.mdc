@@ -1,0 +1,85 @@
+# Segurança
+
+## Autenticação JWT
+
+### Configuração
+
+```properties
+mp.jwt.verify.publickey.location=META-INF/resources/publicKey.pem
+mp.jwt.verify.issuer=https://futebol.com
+smallrye.jwt.sign.key.location=META-INF/resources/privateKey.pem
+smallrye.jwt.new-token.lifespan=86400
+```
+
+### Claims do Token
+
+```json
+{
+  "iss": "https://futebol.com",
+  "sub": "user-uuid",
+  "upn": "email@exemplo.com",
+  "groups": ["USER"],
+  "user_id": "user-uuid",
+  "role": "USER",
+  "exp": 1234567890
+}
+```
+
+## Roles
+
+| Role | Permissões |
+|------|------------|
+| `USER` | Acesso básico ao tenant |
+| `ADMIN` | Gestão de usuários do tenant |
+| `SUPER_ADMIN` | Gestão de tenants e domínios |
+
+## Anotações de Segurança
+
+```java
+// Endpoint público
+@PermitAll
+public Response login() { }
+
+// Qualquer usuário autenticado
+@RolesAllowed({"USER", "ADMIN", "SUPER_ADMIN"})
+public Response getProfile() { }
+
+// Apenas admin do tenant
+@RolesAllowed({"ADMIN", "SUPER_ADMIN"})
+public Response manageUsers() { }
+
+// Apenas super admin
+@RolesAllowed("SUPER_ADMIN")
+public Response manageTenants() { }
+```
+
+## Senhas
+
+Usar BCrypt para hash de senhas:
+
+```java
+@Inject
+PasswordService passwordService;
+
+// Hash
+String hash = passwordService.hash(password);
+
+// Verificar
+boolean valid = passwordService.verify(password, hash);
+```
+
+## Endpoints Públicos
+
+Os seguintes endpoints NÃO requerem autenticação:
+
+- `POST /auth/login`
+- `POST /webhooks/mercadopago`
+- `GET /q/health/*`
+- `GET /q/swagger-ui`
+
+## Proteção contra Ataques
+
+- Rate limiting em endpoints de login
+- Validação de entrada com Bean Validation
+- Sanitização de dados de usuário
+- Logs de tentativas de login falhas

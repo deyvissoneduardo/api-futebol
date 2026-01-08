@@ -1,0 +1,82 @@
+# Event Sourcing
+
+## Visão Geral
+
+O sistema usa Event Sourcing para auditoria completa de todas as operações.
+
+## Estrutura de Eventos
+
+### Classe Base
+
+Todos os eventos devem estender `DomainEvent`:
+
+```java
+@Getter
+@Setter
+@NoArgsConstructor
+@SuperBuilder
+public class XxxEvent extends DomainEvent {
+
+    private String campo1;
+    private String campo2;
+
+    public static XxxEvent create(UUID aggregateId, UUID tenantId, ...) {
+        XxxEvent event = new XxxEvent();
+        event.initializeEvent(aggregateId, "AggregateType", "XxxEvent", tenantId, null);
+        event.setCampo1(...);
+        return event;
+    }
+
+    @Override
+    public String getKafkaTopic() {
+        return "futebol.aggregate.events";
+    }
+}
+```
+
+### Campos Obrigatórios
+
+- `eventId`: UUID único do evento
+- `aggregateId`: ID da entidade relacionada
+- `aggregateType`: Tipo do agregado ( User, Payment)
+- `eventType`: Nome do evento ( UserLoggedIn)
+- `occurredAt`: Timestamp do evento
+
+## Publicação de Eventos
+
+```java
+@Inject
+EventPublisher eventPublisher;
+
+// Após operação de negócio
+XxxEvent event = XxxEvent.create(...);
+eventPublisher.publish(event);
+```
+
+## Kafka Topics
+
+| Tópico | Descrição |
+|--------|-----------|
+| `futebol.user.events` | Eventos de User |
+| `futebol.auth.events` | Eventos de Autenticação |
+| `futebol.dlq.*` | Dead Letter Queues |
+
+## Convenções de Nomes
+
+- Eventos: Verbo no passado + Substantivo (ex: `UserCreated`)
+- Tópicos: `futebol.{aggregate}.events`
+
+## Event Handlers
+
+```java
+@ApplicationScoped
+public class XxxEventHandler {
+
+    @Incoming("xxx-events-in")
+    @Blocking
+    public CompletionStage<Void> handle(Message<String> message) {
+        // processar evento
+        return message.ack();
+    }
+}
+```
