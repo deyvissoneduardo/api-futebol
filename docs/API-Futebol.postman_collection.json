@@ -1,0 +1,978 @@
+{
+	"info": {
+		"_postman_id": "api-futebol-collection",
+		"name": "API Futebol",
+		"description": "Collection completa da API Futebol - Gerenciamento de usuários, autenticação e estatísticas",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "api-futebol"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Health - Status Geral",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/q/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"q",
+								"health"
+							]
+						},
+						"description": "Endpoint público do Quarkus para verificação de saúde geral da aplicação"
+					},
+					"response": []
+				},
+				{
+					"name": "Health - Liveness",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/q/health/live",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"q",
+								"health",
+								"live"
+							]
+						},
+						"description": "Endpoint público do Quarkus para verificação de liveness (aplicação está rodando)"
+					},
+					"response": []
+				},
+				{
+					"name": "Health - Readiness",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/q/health/ready",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"q",
+								"health",
+								"ready"
+							]
+						},
+						"description": "Endpoint público do Quarkus para verificação de readiness (aplicação está pronta para receber requisições)"
+					},
+					"response": []
+				},
+				{
+					"name": "API Health - Status Customizado",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"health"
+							]
+						},
+						"description": "Endpoint customizado da API para verificação de status"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints públicos para verificação de saúde da aplicação"
+		},
+		{
+			"name": "Autenticação",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set(\"token\", response.token);",
+									"    pm.collectionVariables.set(\"user_id\", response.user.id);",
+									"    console.log(\"Token salvo automaticamente na variável 'token'\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@futebol.com\",\n    \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Realiza login e retorna o token JWT. O token é automaticamente salvo na variável de collection 'token'.\n\n**Validações:**\n- Email é obrigatório e deve ser válido\n- Senha é obrigatória\n\n**Resposta:**\n- token: Token JWT para autenticação\n- type: Tipo do token (Bearer)\n- expiresIn: Tempo de expiração em segundos\n- user: Informações básicas do usuário (id, fullName, email, profile)"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints públicos de autenticação"
+		},
+		{
+			"name": "Usuários",
+			"item": [
+				{
+					"name": "Listar Usuários",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						},
+						"description": "Lista todos os usuários ativos do sistema.\n\n**Permissões:** ADMIN, SUPER_ADMIN\n\n**Resposta:** Array de UserResponse contendo:\n- id: UUID do usuário\n- fullName: Nome completo\n- email: Email do usuário\n- photo: URL da foto (opcional)\n- profile: Perfil do usuário (SUPER_ADMIN, ADMIN, JOGADOR)\n- active: Status do usuário\n- createdAt: Data de criação\n- updatedAt: Data de atualização"
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar Usuário por ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{user_id}}",
+									"description": "UUID do usuário"
+								}
+							]
+						},
+						"description": "Busca um usuário específico pelo ID.\n\n**Permissões:** ADMIN, SUPER_ADMIN\n\n**Parâmetros:**\n- id (path): UUID do usuário\n\n**Resposta:** UserResponse\n\n**Erros:**\n- 404: Usuário não encontrado"
+					},
+					"response": []
+				},
+				{
+					"name": "Meu Perfil",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"me"
+							]
+						},
+						"description": "Retorna os dados do usuário autenticado (baseado no token JWT).\n\n**Permissões:** JOGADOR, ADMIN, SUPER_ADMIN (qualquer usuário autenticado)\n\n**Resposta:** UserResponse com os dados do usuário logado"
+					},
+					"response": []
+				},
+				{
+					"name": "Criar Usuário",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fullName\": \"João Silva\",\n    \"email\": \"joao.silva@example.com\",\n    \"password\": \"senha123\",\n    \"photo\": \"https://example.com/photo.jpg\",\n    \"profile\": \"JOGADOR\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						},
+						"description": "Cria um novo usuário no sistema.\n\n**Validações:**\n- fullName: Obrigatório, entre 3 e 255 caracteres\n- email: Obrigatório, formato válido de email, único no sistema\n- password: Obrigatório, entre 6 e 100 caracteres\n- photo: Opcional, máximo 500 caracteres (URL)\n- profile: Opcional, padrão é JOGADOR (SUPER_ADMIN, ADMIN, JOGADOR)\n\n**Regras de Negócio:**\n- Email deve ser único (não pode existir outro usuário com o mesmo email)\n- Perfil padrão é JOGADOR se não informado\n- Usuário é criado como ativo (active = true)\n\n**Resposta:**\n- 201: UserResponse com os dados do usuário criado\n\n**Erros:**\n- 400: Dados inválidos ou email já em uso"
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar Usuário",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fullName\": \"João Silva Atualizado\",\n    \"email\": \"joao.silva.novo@example.com\",\n    \"password\": \"novaSenha123\",\n    \"photo\": \"https://example.com/new-photo.jpg\",\n    \"profile\": \"ADMIN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{user_id}}",
+									"description": "UUID do usuário"
+								}
+							]
+						},
+						"description": "Atualiza os dados de um usuário existente.\n\n**Permissões:** ADMIN, SUPER_ADMIN\n\n**Parâmetros:**\n- id (path): UUID do usuário a ser atualizado\n\n**Validações:**\n- fullName: Opcional, entre 3 e 255 caracteres\n- email: Opcional, formato válido de email\n- password: Opcional, entre 6 e 100 caracteres\n- photo: Opcional, máximo 500 caracteres (URL)\n- profile: Opcional (SUPER_ADMIN, ADMIN, JOGADOR)\n\n**Regras de Negócio:**\n- Todos os campos são opcionais\n- Email deve ser único (não pode existir outro usuário com o mesmo email)\n- Senha será hashada antes de salvar\n\n**Resposta:**\n- 200: UserResponse com os dados atualizados\n\n**Erros:**\n- 400: Dados inválidos ou email já em uso\n- 404: Usuário não encontrado"
+					},
+					"response": []
+				},
+				{
+					"name": "Deletar Usuário",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{user_id}}",
+									"description": "UUID do usuário"
+								}
+							]
+						},
+						"description": "Desativa um usuário (soft delete) - marca como inativo.\n\n**Permissões:** SUPER_ADMIN\n\n**Parâmetros:**\n- id (path): UUID do usuário a ser deletado\n\n**Regras de Negócio:**\n- Operação de soft delete (usuário é marcado como inactive = false)\n- Usuário não é removido fisicamente do banco\n\n**Resposta:**\n- 204: No Content (sem corpo)\n\n**Erros:**\n- 404: Usuário não encontrado"
+					},
+					"response": []
+				}
+			],
+			"description": "Operações CRUD de usuários"
+		},
+		{
+			"name": "Estatísticas",
+			"item": [
+				{
+					"name": "Buscar Estatísticas do Usuário",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/:userId/statistics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":userId",
+								"statistics"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "{{user_id}}",
+									"description": "UUID do usuário"
+								}
+							]
+						},
+						"description": "Busca as estatísticas de um usuário específico.\n\n**Permissões:** JOGADOR, ADMIN, SUPER_ADMIN\n\n**Regras de Negócio:**\n- Usuários só podem consultar suas próprias estatísticas\n- Usuário SUPER_ADMIN não possui estatísticas\n\n**Parâmetros:**\n- userId (path): UUID do usuário\n\n**Resposta:** UserStatisticsResponse contendo:\n- id: UUID das estatísticas\n- userId: UUID do usuário\n- minutesPlayed: Tempo total jogado (formato \"HH:mm:ss\")\n- goals: Total de gols\n- complaints: Total de reclamações\n- victories: Total de vitórias\n- draws: Total de empates\n- defeats: Total de derrotas\n- createdAt: Data de criação\n- updatedAt: Data de atualização\n\n**Erros:**\n- 400: Usuário SUPER_ADMIN não possui estatísticas\n- 401: Não autorizado a consultar estatísticas de outro usuário\n- 404: Usuário ou estatísticas não encontradas"
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar Minhas Estatísticas",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/me/statistics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"me",
+								"statistics"
+							]
+						},
+						"description": "Retorna as estatísticas do usuário autenticado (baseado no token JWT).\n\n**Permissões:** JOGADOR, ADMIN, SUPER_ADMIN\n\n**Regras de Negócio:**\n- Usuário SUPER_ADMIN não possui estatísticas\n\n**Resposta:** UserStatisticsResponse\n\n**Erros:**\n- 400: Usuário SUPER_ADMIN não possui estatísticas\n- 404: Estatísticas não encontradas"
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar Todas as Estatísticas",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"minutesPlayed\": \"01:30:00\",\n    \"goals\": 5,\n    \"complaints\": 2,\n    \"victories\": 3,\n    \"draws\": 1,\n    \"defeats\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/:userId/statistics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":userId",
+								"statistics"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "{{user_id}}",
+									"description": "UUID do usuário"
+								}
+							]
+						},
+						"description": "Atualiza todas as estatísticas de um usuário de uma vez.\n\n**Permissões:** ADMIN, SUPER_ADMIN\n\n**Parâmetros:**\n- userId (path): UUID do usuário\n\n**Validações:**\n- minutesPlayed: Opcional, formato \"HH:mm:ss\" ou \"-HH:mm:ss\" para subtrair (ex: \"-0:05:00\" para subtrair 5 minutos)\n- goals: Opcional, mínimo 0 (não pode ser negativo)\n- complaints: Opcional, mínimo 0 (não pode ser negativo)\n- victories: Opcional, mínimo 0 (não pode ser negativo)\n- draws: Opcional, mínimo 0 (não pode ser negativo)\n- defeats: Opcional, mínimo 0 (não pode ser negativo)\n\n**Regras de Negócio:**\n- Todos os campos são opcionais\n- minutesPlayed pode ser negativo para subtrair tempo\n- Valores numéricos não podem ser negativos\n- Se minutos for negativo, o tempo será subtraído do total atual\n\n**Exemplo de minutesPlayed:**\n- \"01:30:00\" - Adiciona 1 hora e 30 minutos\n- \"-0:30:00\" - Subtrai 30 minutos\n\n**Resposta:**\n- 200: UserStatisticsResponse com as estatísticas atualizadas\n\n**Erros:**\n- 400: Dados inválidos\n- 404: Usuário não encontrado"
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar Minutos Jogados",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"minutesToAdd\": \"01:30:00\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/:userId/statistics/minutes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":userId",
+								"statistics",
+								"minutes"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "{{user_id}}",
+									"description": "UUID do usuário"
+								}
+							]
+						},
+						"description": "Adiciona ou subtrai minutos jogados.\n\n**Permissões:** ADMIN, SUPER_ADMIN\n\n**Parâmetros:**\n- userId (path): UUID do usuário\n\n**Validações:**\n- minutesToAdd: Obrigatório, formato \"HH:mm:ss\" ou \"-HH:mm:ss\" para subtrair\n\n**Regras de Negócio:**\n- Valores positivos adicionam tempo (ex: \"01:30:00\" adiciona 1h30min)\n- Valores negativos subtraem tempo (ex: \"-0:05:00\" subtrai 5 minutos)\n- O tempo será adicionado/subtraído do total atual\n\n**Exemplos:**\n- \"01:30:00\" - Adiciona 1 hora e 30 minutos\n- \"-0:30:00\" - Subtrai 30 minutos\n- \"-0:05:00\" - Subtrai 5 minutos\n\n**Resposta:**\n- 200: UserStatisticsResponse com as estatísticas atualizadas\n\n**Erros:**\n- 400: Dados inválidos\n- 404: Usuário não encontrado"
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar Gols",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/:userId/statistics/goals",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":userId",
+								"statistics",
+								"goals"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "{{user_id}}",
+									"description": "UUID do usuário"
+								}
+							]
+						},
+						"description": "Adiciona ou subtrai gols.\n\n**Permissões:** ADMIN, SUPER_ADMIN\n\n**Parâmetros:**\n- userId (path): UUID do usuário\n\n**Validações:**\n- value: Obrigatório, inteiro (positivo ou negativo)\n\n**Regras de Negócio:**\n- Valores positivos somam (ex: 1 adiciona 1 gol)\n- Valores negativos subtraem (ex: -1 remove 1 gol)\n- O valor será adicionado/subtraído do total atual\n\n**Exemplos:**\n- 1 - Adiciona 1 gol\n- -1 - Remove 1 gol\n- 3 - Adiciona 3 gols\n\n**Resposta:**\n- 200: UserStatisticsResponse com as estatísticas atualizadas\n\n**Erros:**\n- 400: Dados inválidos\n- 404: Usuário não encontrado"
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar Reclamações",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/:userId/statistics/complaints",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":userId",
+								"statistics",
+								"complaints"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "{{user_id}}",
+									"description": "UUID do usuário"
+								}
+							]
+						},
+						"description": "Adiciona ou subtrai reclamações.\n\n**Permissões:** ADMIN, SUPER_ADMIN\n\n**Parâmetros:**\n- userId (path): UUID do usuário\n\n**Validações:**\n- value: Obrigatório, inteiro (positivo ou negativo)\n\n**Regras de Negócio:**\n- Valores positivos somam (ex: 1 adiciona 1 reclamação)\n- Valores negativos subtraem (ex: -1 remove 1 reclamação)\n- O valor será adicionado/subtraído do total atual\n\n**Exemplos:**\n- 1 - Adiciona 1 reclamação\n- -1 - Remove 1 reclamação\n- 2 - Adiciona 2 reclamações\n\n**Resposta:**\n- 200: UserStatisticsResponse com as estatísticas atualizadas\n\n**Erros:**\n- 400: Dados inválidos\n- 404: Usuário não encontrado"
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar Vitórias",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/:userId/statistics/victories",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":userId",
+								"statistics",
+								"victories"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "{{user_id}}",
+									"description": "UUID do usuário"
+								}
+							]
+						},
+						"description": "Adiciona ou subtrai vitórias.\n\n**Permissões:** ADMIN, SUPER_ADMIN\n\n**Parâmetros:**\n- userId (path): UUID do usuário\n\n**Validações:**\n- value: Obrigatório, inteiro (positivo ou negativo)\n\n**Regras de Negócio:**\n- Valores positivos somam (ex: 1 adiciona 1 vitória)\n- Valores negativos subtraem (ex: -1 remove 1 vitória)\n- O valor será adicionado/subtraído do total atual\n\n**Exemplos:**\n- 1 - Adiciona 1 vitória\n- -1 - Remove 1 vitória\n- 3 - Adiciona 3 vitórias\n\n**Resposta:**\n- 200: UserStatisticsResponse com as estatísticas atualizadas\n\n**Erros:**\n- 400: Dados inválidos\n- 404: Usuário não encontrado"
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar Empates",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/:userId/statistics/draws",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":userId",
+								"statistics",
+								"draws"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "{{user_id}}",
+									"description": "UUID do usuário"
+								}
+							]
+						},
+						"description": "Adiciona ou subtrai empates.\n\n**Permissões:** ADMIN, SUPER_ADMIN\n\n**Parâmetros:**\n- userId (path): UUID do usuário\n\n**Validações:**\n- value: Obrigatório, inteiro (positivo ou negativo)\n\n**Regras de Negócio:**\n- Valores positivos somam (ex: 1 adiciona 1 empate)\n- Valores negativos subtraem (ex: -1 remove 1 empate)\n- O valor será adicionado/subtraído do total atual\n\n**Exemplos:**\n- 1 - Adiciona 1 empate\n- -1 - Remove 1 empate\n- 2 - Adiciona 2 empates\n\n**Resposta:**\n- 200: UserStatisticsResponse com as estatísticas atualizadas\n\n**Erros:**\n- 400: Dados inválidos\n- 404: Usuário não encontrado"
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar Derrotas",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/:userId/statistics/defeats",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":userId",
+								"statistics",
+								"defeats"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "{{user_id}}",
+									"description": "UUID do usuário"
+								}
+							]
+						},
+						"description": "Adiciona ou subtrai derrotas.\n\n**Permissões:** ADMIN, SUPER_ADMIN\n\n**Parâmetros:**\n- userId (path): UUID do usuário\n\n**Validações:**\n- value: Obrigatório, inteiro (positivo ou negativo)\n\n**Regras de Negócio:**\n- Valores positivos somam (ex: 1 adiciona 1 derrota)\n- Valores negativos subtraem (ex: -1 remove 1 derrota)\n- O valor será adicionado/subtraído do total atual\n\n**Exemplos:**\n- 1 - Adiciona 1 derrota\n- -1 - Remove 1 derrota\n- 2 - Adiciona 2 derrotas\n\n**Resposta:**\n- 200: UserStatisticsResponse com as estatísticas atualizadas\n\n**Erros:**\n- 400: Dados inválidos\n- 404: Usuário não encontrado"
+					},
+					"response": []
+				}
+			],
+			"description": "Operações relacionadas às estatísticas dos usuários (JOGADOR e ADMIN)"
+		},
+		{
+			"name": "Ranking",
+			"item": [
+				{
+					"name": "Ranking de Gols",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/ranking/goals",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ranking",
+								"goals"
+							]
+						},
+						"description": "Retorna o ranking de gols ordenado do maior para o menor.\n\n**Permissões:** ADMIN, JOGADOR, SUPER_ADMIN\n\n**Resposta:** RankingResponse contendo:\n- type: Tipo de ranking (\"goals\")\n- description: Descrição do ranking\n- items: Lista de RankingItemResponse ordenada por gols (maior para menor)\n- total: Total de usuários no ranking\n\n**Estrutura de RankingItemResponse:**\n- position: Posição no ranking (1, 2, 3...)\n- userId: UUID do usuário\n- userName: Nome completo do usuário\n- userEmail: Email do usuário\n- value: Valor numérico da estatística (gols)\n- formattedValue: Valor formatado para exibição"
+					},
+					"response": []
+				},
+				{
+					"name": "Ranking de Reclamações",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/ranking/complaints",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ranking",
+								"complaints"
+							]
+						},
+						"description": "Retorna o ranking de reclamações ordenado do maior para o menor.\n\n**Permissões:** ADMIN, JOGADOR, SUPER_ADMIN\n\n**Resposta:** RankingResponse contendo:\n- type: Tipo de ranking (\"complaints\")\n- description: Descrição do ranking\n- items: Lista de RankingItemResponse ordenada por reclamações (maior para menor)\n- total: Total de usuários no ranking\n\n**Estrutura de RankingItemResponse:**\n- position: Posição no ranking (1, 2, 3...)\n- userId: UUID do usuário\n- userName: Nome completo do usuário\n- userEmail: Email do usuário\n- value: Valor numérico da estatística (reclamações)\n- formattedValue: Valor formatado para exibição"
+					},
+					"response": []
+				},
+				{
+					"name": "Ranking de Vitórias",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/ranking/victories",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ranking",
+								"victories"
+							]
+						},
+						"description": "Retorna o ranking de vitórias ordenado do maior para o menor.\n\n**Permissões:** ADMIN, JOGADOR, SUPER_ADMIN\n\n**Resposta:** RankingResponse contendo:\n- type: Tipo de ranking (\"victories\")\n- description: Descrição do ranking\n- items: Lista de RankingItemResponse ordenada por vitórias (maior para menor)\n- total: Total de usuários no ranking\n\n**Estrutura de RankingItemResponse:**\n- position: Posição no ranking (1, 2, 3...)\n- userId: UUID do usuário\n- userName: Nome completo do usuário\n- userEmail: Email do usuário\n- value: Valor numérico da estatística (vitórias)\n- formattedValue: Valor formatado para exibição"
+					},
+					"response": []
+				},
+				{
+					"name": "Ranking de Empates",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/ranking/draws",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ranking",
+								"draws"
+							]
+						},
+						"description": "Retorna o ranking de empates ordenado do maior para o menor.\n\n**Permissões:** ADMIN, JOGADOR, SUPER_ADMIN\n\n**Resposta:** RankingResponse contendo:\n- type: Tipo de ranking (\"draws\")\n- description: Descrição do ranking\n- items: Lista de RankingItemResponse ordenada por empates (maior para menor)\n- total: Total de usuários no ranking\n\n**Estrutura de RankingItemResponse:**\n- position: Posição no ranking (1, 2, 3...)\n- userId: UUID do usuário\n- userName: Nome completo do usuário\n- userEmail: Email do usuário\n- value: Valor numérico da estatística (empates)\n- formattedValue: Valor formatado para exibição"
+					},
+					"response": []
+				},
+				{
+					"name": "Ranking de Derrotas",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/ranking/defeats",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ranking",
+								"defeats"
+							]
+						},
+						"description": "Retorna o ranking de derrotas ordenado do maior para o menor.\n\n**Permissões:** ADMIN, JOGADOR, SUPER_ADMIN\n\n**Resposta:** RankingResponse contendo:\n- type: Tipo de ranking (\"defeats\")\n- description: Descrição do ranking\n- items: Lista de RankingItemResponse ordenada por derrotas (maior para menor)\n- total: Total de usuários no ranking\n\n**Estrutura de RankingItemResponse:**\n- position: Posição no ranking (1, 2, 3...)\n- userId: UUID do usuário\n- userName: Nome completo do usuário\n- userEmail: Email do usuário\n- value: Valor numérico da estatística (derrotas)\n- formattedValue: Valor formatado para exibição"
+					},
+					"response": []
+				},
+				{
+					"name": "Ranking de Minutos Jogados",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/ranking/minutes-played",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"ranking",
+								"minutes-played"
+							]
+						},
+						"description": "Retorna o ranking de minutos jogados ordenado do maior para o menor.\n\n**Permissões:** ADMIN, JOGADOR, SUPER_ADMIN\n\n**Resposta:** RankingResponse contendo:\n- type: Tipo de ranking (\"minutes-played\")\n- description: Descrição do ranking\n- items: Lista de RankingItemResponse ordenada por minutos jogados (maior para menor)\n- total: Total de usuários no ranking\n\n**Estrutura de RankingItemResponse:**\n- position: Posição no ranking (1, 2, 3...)\n- userId: UUID do usuário\n- userName: Nome completo do usuário\n- userEmail: Email do usuário\n- value: Valor numérico em segundos (minutos jogados)\n- formattedValue: Valor formatado para exibição (ex: \"01:05:30\")"
+					},
+					"response": []
+				}
+			],
+			"description": "Operações de consulta de rankings de estatísticas dos usuários"
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
