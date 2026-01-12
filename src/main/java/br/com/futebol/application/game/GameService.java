@@ -8,6 +8,7 @@ import br.com.futebol.domain.user.UserProfile;
 import br.com.futebol.infrastructure.game.GameRepository;
 import br.com.futebol.infrastructure.user.UserRepository;
 import br.com.futebol.interfaces.game.CreateGameRequest;
+import br.com.futebol.interfaces.game.CreateGameResponse;
 import br.com.futebol.interfaces.game.GameResponse;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -36,14 +37,15 @@ public class GameService {
     UserRepository userRepository;
 
     /**
-     * Lista todos os jogos ordenados por data.
+     * Lista o único jogo com released = true.
+     * Apenas um jogo pode estar com released = true por vez.
      *
-     * @return lista de GameResponse
+     * @return lista contendo apenas o jogo com released = true, ou lista vazia se não houver
      */
     public List<GameResponse> findAll() {
-        return gameRepository.findAllOrderedByDate().stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        return gameRepository.findReleased()
+                .map(game -> List.of(toResponse(game)))
+                .orElse(List.of());
     }
 
     /**
@@ -61,14 +63,16 @@ public class GameService {
 
     /**
      * Cria um novo jogo.
+     * Se já existir um jogo com released = true, ele será automaticamente alterado para released = false,
+     * e o novo jogo será o único com released = true.
      *
      * @param request os dados do novo jogo
      * @param userId o ID do usuário que está criando o jogo
-     * @return GameResponse com os dados do jogo criado
+     * @return CreateGameResponse com os dados do jogo criado e mensagem informativa se necessário
      * @throws ForbiddenException se o usuário não tiver permissão (não for ADMIN ou SUPER_ADMIN)
      */
     @Transactional
-    public GameResponse create(CreateGameRequest request, UUID userId) {
+    public CreateGameResponse create(CreateGameRequest request, UUID userId) {
         var user = userRepository.findByIdOptional(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", userId));
 
@@ -79,6 +83,25 @@ public class GameService {
         // Combinar startDate e startHour em OffsetDateTime
         OffsetDateTime gameDate = parseGameDateTime(request.getStartDate(), request.getStartHour());
 
+        // Verificar se já existe um jogo com released = true
+        List<Game> releasedGames = gameRepository.findAllReleased();
+        String message = null;
+
+        if (!releasedGames.isEmpty()) {
+            // Alterar todos os games com released = true para false
+            for (Game releasedGame : releasedGames) {
+                releasedGame.setReleased(false);
+                gameRepository.persist(releasedGame);
+            }
+            // Criar mensagem informativa
+            if (releasedGames.size() == 1) {
+                message = String.format("O gameId %s foi alterado para released = false. O novo game é o único com released = true.", 
+                        releasedGames.get(0).getId());
+            } else {
+                message = String.format("Os gameIds foram alterados para released = false. O novo game é o único com released = true.");
+            }
+        }
+
         // Jogo criado com released = true por padrão, permitindo confirmações
         Game game = Game.builder()
                 .gameDate(gameDate)
@@ -86,7 +109,15 @@ public class GameService {
                 .build();
 
         gameRepository.persist(game);
-        return toResponse(game);
+
+        return CreateGameResponse.builder()
+                .id(game.getId())
+                .gameDate(game.getGameDate())
+                .released(game.getReleased())
+                .createdAt(game.getCreatedAt())
+                .updatedAt(game.getUpdatedAt())
+                .message(message)
+                .build();
     }
 
     /**

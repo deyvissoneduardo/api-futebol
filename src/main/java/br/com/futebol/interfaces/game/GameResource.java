@@ -1,6 +1,7 @@
 package br.com.futebol.interfaces.game;
 
 import br.com.futebol.application.game.GameService;
+import br.com.futebol.interfaces.game.CreateGameResponse;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -48,14 +49,14 @@ public class GameResource {
     @Operation(summary = "Criar jogo", description = "Cria um novo jogo (apenas ADMIN/SUPER_ADMIN)")
     @APIResponses({
             @APIResponse(responseCode = "201", description = "Jogo criado com sucesso",
-                    content = @Content(schema = @Schema(implementation = GameResponse.class))),
+                    content = @Content(schema = @Schema(implementation = CreateGameResponse.class))),
             @APIResponse(responseCode = "400", description = "Dados inválidos"),
             @APIResponse(responseCode = "401", description = "Não autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado")
     })
     public Response create(@Valid CreateGameRequest request) {
         UUID userId = UUID.fromString(jwt.getSubject());
-        GameResponse game = gameService.create(request, userId);
+        CreateGameResponse game = gameService.create(request, userId);
         return Response.status(Response.Status.CREATED).entity(game).build();
     }
 

@@ -32,5 +32,23 @@ public class GameRepository implements PanacheRepositoryBase<Game, UUID> {
     public Optional<Game> findByIdOptional(UUID id) {
         return find("id = ?1", id).firstResultOptional();
     }
+
+    /**
+     * Busca todos os jogos com released = true.
+     *
+     * @return lista de jogos com released = true
+     */
+    public List<Game> findAllReleased() {
+        return list("released = ?1", true);
+    }
+
+    /**
+     * Busca o único jogo com released = true.
+     *
+     * @return Optional contendo o jogo se encontrado
+     */
+    public Optional<Game> findReleased() {
+        return find("released = ?1", true).firstResultOptional();
+    }
 }
 
