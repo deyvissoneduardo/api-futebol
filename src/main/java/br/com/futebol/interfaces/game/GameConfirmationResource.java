@@ -44,14 +44,14 @@ public class GameConfirmationResource {
     @POST
     @RolesAllowed({"JOGADOR", "ADMIN", "SUPER_ADMIN"})
     @SecurityRequirement(name = "jwt")
-    @Operation(summary = "Confirmar nome", description = "Confirma um nome para o jogo")
+    @Operation(summary = "Confirmar nome", description = "Confirma um nome para o jogo. Se isGuest=true, cria um UUID único para o convidado, permitindo estatísticas separadas.")
     @APIResponses({
             @APIResponse(responseCode = "201", description = "Nome confirmado com sucesso",
                     content = @Content(schema = @Schema(implementation = GameConfirmationResponse.class))),
             @APIResponse(responseCode = "400", description = "Dados inválidos ou jogo já iniciou"),
             @APIResponse(responseCode = "401", description = "Não autorizado"),
             @APIResponse(responseCode = "403", description = "Lista não está liberada"),
-            @APIResponse(responseCode = "409", description = "Nome já confirmado ou usuário já confirmou")
+            @APIResponse(responseCode = "409", description = "Nome já confirmado para este jogo")
     })
     public Response confirmName(@PathParam("gameId") UUID gameId, @Valid ConfirmNameRequest request) {
         UUID userId = UUID.fromString(jwt.getSubject());
@@ -80,17 +80,17 @@ public class GameConfirmationResource {
     @Path("/me")
     @RolesAllowed({"JOGADOR", "ADMIN", "SUPER_ADMIN"})
     @SecurityRequirement(name = "jwt")
-    @Operation(summary = "Minha confirmação", description = "Retorna a confirmação do usuário logado para o jogo")
+    @Operation(summary = "Minhas confirmações", description = "Retorna todas as confirmações relacionadas ao usuário logado: próprias e de convidados confirmados por ele")
     @APIResponses({
-            @APIResponse(responseCode = "200", description = "Confirmação encontrada",
+            @APIResponse(responseCode = "200", description = "Lista de confirmações do usuário",
                     content = @Content(schema = @Schema(implementation = GameConfirmationResponse.class))),
             @APIResponse(responseCode = "401", description = "Não autorizado"),
-            @APIResponse(responseCode = "404", description = "Confirmação não encontrada")
+            @APIResponse(responseCode = "404", description = "Jogo não encontrado")
     })
-    public Response findMyConfirmation(@PathParam("gameId") UUID gameId) {
+    public Response findMyConfirmations(@PathParam("gameId") UUID gameId) {
         UUID userId = UUID.fromString(jwt.getSubject());
-        GameConfirmationResponse confirmation = gameConfirmationService.findMyConfirmation(gameId, userId);
-        return Response.ok(confirmation).build();
+        java.util.List<GameConfirmationResponse> confirmations = gameConfirmationService.findMyConfirmations(gameId, userId);
+        return Response.ok(confirmations).build();
     }
 }
 

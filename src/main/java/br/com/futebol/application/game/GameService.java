@@ -79,9 +79,10 @@ public class GameService {
         // Combinar startDate e startHour em OffsetDateTime
         OffsetDateTime gameDate = parseGameDateTime(request.getStartDate(), request.getStartHour());
 
+        // Jogo criado com released = true por padrão, permitindo confirmações
         Game game = Game.builder()
                 .gameDate(gameDate)
-                .released(false)
+                .released(true)
                 .build();
 
         gameRepository.persist(game);
@@ -111,10 +112,10 @@ public class GameService {
     }
 
     /**
-     * Libera a lista de confirmação de um jogo.
+     * Inicia o jogo, bloqueando novas confirmações (muda released para false).
      *
      * @param id o ID do jogo
-     * @param userId o ID do usuário que está liberando a lista
+     * @param userId o ID do usuário que está iniciando o jogo
      * @return GameResponse com os dados do jogo atualizado
      * @throws ResourceNotFoundException se o jogo não for encontrado
      * @throws ForbiddenException se o usuário não tiver permissão (não for ADMIN ou SUPER_ADMIN)
@@ -125,13 +126,14 @@ public class GameService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", userId));
 
         if (user.getProfile() != UserProfile.ADMIN && user.getProfile() != UserProfile.SUPER_ADMIN) {
-            throw new ForbiddenException("Apenas ADMIN ou SUPER_ADMIN podem liberar listas");
+            throw new ForbiddenException("Apenas ADMIN ou SUPER_ADMIN podem iniciar jogos");
         }
 
         Game game = gameRepository.findByIdOptional(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Jogo", "id", id));
 
-        game.setReleased(true);
+        // Iniciar jogo: muda released para false, bloqueando novas confirmações
+        game.setReleased(false);
         gameRepository.persist(game);
         return toResponse(game);
     }

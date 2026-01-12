@@ -1,6 +1,5 @@
 package br.com.futebol.application.game;
 
-import br.com.futebol.core.exceptions.BusinessException;
 import br.com.futebol.core.exceptions.ConflictException;
 import br.com.futebol.core.exceptions.ForbiddenException;
 import br.com.futebol.core.exceptions.ResourceNotFoundException;
@@ -39,45 +38,56 @@ public class GameConfirmationService {
 
     /**
      * Confirma um nome para um jogo.
+     * Um mesmo usuário pode confirmar múltiplos nomes (útil para casos de convidados),
+     * desde que os nomes sejam diferentes.
+     * 
+     * Quando isGuest = true, o sistema cria um UUID único para o convidado,
+     * permitindo que estatísticas (gols, minutos, etc.) sejam registradas separadamente.
      *
      * @param gameId o ID do jogo
-     * @param request os dados da confirmação
+     * @param request os dados da confirmação (pode incluir isGuest para convidados)
      * @param userId o ID do usuário que está confirmando
      * @return GameConfirmationResponse com os dados da confirmação criada
      * @throws ResourceNotFoundException se o jogo não for encontrado
-     * @throws ForbiddenException se a lista não estiver liberada
-     * @throws BusinessException se o jogo já iniciou
-     * @throws ConflictException se o nome já estiver confirmado ou o usuário já confirmou
+     * @throws ForbiddenException se a lista não estiver liberada (released = false)
+     * @throws ConflictException se o nome já estiver confirmado para este jogo
      */
     @Transactional
     public GameConfirmationResponse confirmName(UUID gameId, ConfirmNameRequest request, UUID userId) {
         Game game = gameRepository.findByIdOptional(gameId)
                 .orElseThrow(() -> new ResourceNotFoundException("Jogo", "id", gameId));
 
-        // Validar se a lista está liberada
+        // Validar se a lista está liberada (released = true permite confirmações)
         if (!game.getReleased()) {
             throw new ForbiddenException("Lista não está liberada");
         }
 
-        // Validar se o jogo ainda não iniciou
-        if (game.getGameDate().isBefore(OffsetDateTime.now()) || game.getGameDate().isEqual(OffsetDateTime.now())) {
-            throw new BusinessException("Lista encerrada - jogo já iniciou");
-        }
-
-        // Validar se o usuário já confirmou para este jogo
-        if (gameConfirmationRepository.existsByGameIdAndUserId(gameId, userId)) {
-            throw new ConflictException("Você já confirmou seu nome para este jogo");
-        }
-
-        // Validar se o nome já está confirmado para este jogo
+        // Validar se o nome já está confirmado para este jogo (única restrição)
         if (gameConfirmationRepository.existsByGameIdAndConfirmedName(gameId, request.getConfirmedName())) {
             throw new ConflictException("Nome já confirmado para este jogo. Escolha outro nome.");
         }
 
+        // Se for convidado, gerar um UUID único para o convidado
+        UUID finalUserId;
+        UUID confirmedByUserId = null;
+        Boolean isGuest = request.getIsGuest() != null && request.getIsGuest();
+
+        if (isGuest) {
+            // Gera UUID único para o convidado
+            finalUserId = UUID.randomUUID();
+            // Salva quem confirmou o convidado
+            confirmedByUserId = userId;
+        } else {
+            // Usa o userId do usuário logado
+            finalUserId = userId;
+        }
+
         GameConfirmation confirmation = GameConfirmation.builder()
                 .gameId(gameId)
-                .userId(userId)
+                .userId(finalUserId)
                 .confirmedName(request.getConfirmedName())
+                .isGuest(isGuest)
+                .confirmedByUserId(confirmedByUserId)
                 .confirmedAt(OffsetDateTime.now())
                 .build();
 
@@ -118,21 +128,24 @@ public class GameConfirmationService {
     }
 
     /**
-     * Busca a confirmação do usuário logado para um jogo.
+     * Busca todas as confirmações relacionadas ao usuário logado para um jogo.
+     * Inclui confirmações próprias e de convidados confirmados por ele.
      *
      * @param gameId o ID do jogo
      * @param userId o ID do usuário
-     * @return GameConfirmationResponse com os dados da confirmação
-     * @throws ResourceNotFoundException se o jogo ou a confirmação não for encontrada
+     * @return Lista de GameConfirmationResponse com as confirmações relacionadas ao usuário
+     * @throws ResourceNotFoundException se o jogo não for encontrado
      */
-    public GameConfirmationResponse findMyConfirmation(UUID gameId, UUID userId) {
+    public List<GameConfirmationResponse> findMyConfirmations(UUID gameId, UUID userId) {
         gameRepository.findByIdOptional(gameId)
                 .orElseThrow(() -> new ResourceNotFoundException("Jogo", "id", gameId));
 
-        GameConfirmation confirmation = gameConfirmationRepository.findByGameIdAndUserId(gameId, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Você ainda não confirmou seu nome para este jogo"));
-
-        return toResponse(confirmation);
+        // Busca confirmações próprias e de convidados confirmados por este usuário
+        List<GameConfirmation> confirmations = gameConfirmationRepository.findByGameIdAndUserRelated(gameId, userId);
+        
+        return confirmations.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -147,6 +160,8 @@ public class GameConfirmationService {
                 .gameId(confirmation.getGameId())
                 .userId(confirmation.getUserId())
                 .confirmedName(confirmation.getConfirmedName())
+                .isGuest(confirmation.getIsGuest())
+                .confirmedByUserId(confirmation.getConfirmedByUserId())
                 .confirmedAt(confirmation.getConfirmedAt())
                 .createdAt(confirmation.getCreatedAt())
                 .updatedAt(confirmation.getUpdatedAt())

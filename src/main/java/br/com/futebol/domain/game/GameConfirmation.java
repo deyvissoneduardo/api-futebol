@@ -34,6 +34,13 @@ public class GameConfirmation extends PanacheEntityBase {
     @Column(name = "confirmed_name", nullable = false, length = 255)
     private String confirmedName;
 
+    @Column(name = "is_guest", nullable = false)
+    @Builder.Default
+    private Boolean isGuest = false;
+
+    @Column(name = "confirmed_by_user_id")
+    private UUID confirmedByUserId;
+
     @Column(name = "confirmed_at", nullable = false)
     @Builder.Default
     private OffsetDateTime confirmedAt = OffsetDateTime.now();
@@ -53,6 +60,8 @@ public class GameConfirmation extends PanacheEntityBase {
                 ", gameId=" + gameId +
                 ", userId=" + userId +
                 ", confirmedName='" + confirmedName + '\'' +
+                ", isGuest=" + isGuest +
+                ", confirmedByUserId=" + confirmedByUserId +
                 ", confirmedAt=" + confirmedAt +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +

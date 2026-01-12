@@ -25,14 +25,14 @@ public class GameConfirmationRepository implements PanacheRepositoryBase<GameCon
     }
 
     /**
-     * Busca uma confirmação por jogo e usuário.
+     * Busca todas as confirmações de um usuário para um jogo.
      *
      * @param gameId o ID do jogo
      * @param userId o ID do usuário
-     * @return Optional contendo a confirmação se encontrada
+     * @return lista de confirmações do usuário para o jogo
      */
-    public Optional<GameConfirmation> findByGameIdAndUserId(UUID gameId, UUID userId) {
-        return find("gameId = ?1 AND userId = ?2", gameId, userId).firstResultOptional();
+    public List<GameConfirmation> findByGameIdAndUserId(UUID gameId, UUID userId) {
+        return list("gameId = ?1 AND userId = ?2", gameId, userId);
     }
 
     /**
@@ -55,6 +55,18 @@ public class GameConfirmationRepository implements PanacheRepositoryBase<GameCon
      */
     public boolean existsByGameIdAndUserId(UUID gameId, UUID userId) {
         return count("gameId = ?1 AND userId = ?2", gameId, userId) > 0;
+    }
+
+    /**
+     * Busca todas as confirmações relacionadas a um usuário para um jogo.
+     * Inclui confirmações próprias (userId) e de convidados confirmados por ele (confirmedByUserId).
+     *
+     * @param gameId o ID do jogo
+     * @param userId o ID do usuário
+     * @return lista de confirmações relacionadas ao usuário
+     */
+    public List<GameConfirmation> findByGameIdAndUserRelated(UUID gameId, UUID userId) {
+        return list("gameId = ?1 AND (userId = ?2 OR confirmedByUserId = ?2)", gameId, userId);
     }
 }
 

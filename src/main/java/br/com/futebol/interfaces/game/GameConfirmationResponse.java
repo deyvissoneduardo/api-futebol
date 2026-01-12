@@ -24,6 +24,10 @@ public class GameConfirmationResponse {
 
     private String confirmedName;
 
+    private Boolean isGuest;
+
+    private UUID confirmedByUserId;
+
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
     private OffsetDateTime confirmedAt;
 

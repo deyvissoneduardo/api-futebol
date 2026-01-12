@@ -93,9 +93,9 @@ public class GameResource {
     @Path("/{id}/release")
     @RolesAllowed({"ADMIN", "SUPER_ADMIN"})
     @SecurityRequirement(name = "jwt")
-    @Operation(summary = "Liberar lista", description = "Libera a lista de confirmação de um jogo (apenas ADMIN/SUPER_ADMIN)")
+    @Operation(summary = "Iniciar jogo", description = "Inicia o jogo, bloqueando novas confirmações (apenas ADMIN/SUPER_ADMIN)")
     @APIResponses({
-            @APIResponse(responseCode = "200", description = "Lista liberada com sucesso",
+            @APIResponse(responseCode = "200", description = "Jogo iniciado com sucesso",
                     content = @Content(schema = @Schema(implementation = GameResponse.class))),
             @APIResponse(responseCode = "401", description = "Não autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado"),
