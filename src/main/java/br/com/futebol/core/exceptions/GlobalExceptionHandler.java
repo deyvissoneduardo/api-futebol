@@ -27,12 +27,20 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
             return buildResponse(Response.Status.NOT_FOUND, exception.getMessage());
         }
 
+        if (exception instanceof ConflictException) {
+            return buildResponse(Response.Status.CONFLICT, exception.getMessage());
+        }
+
         if (exception instanceof BusinessException) {
             return buildResponse(Response.Status.BAD_REQUEST, exception.getMessage());
         }
 
         if (exception instanceof UnauthorizedException) {
             return buildResponse(Response.Status.UNAUTHORIZED, exception.getMessage());
+        }
+
+        if (exception instanceof ForbiddenException) {
+            return buildResponse(Response.Status.FORBIDDEN, exception.getMessage());
         }
 
         if (exception instanceof ConstraintViolationException cve) {

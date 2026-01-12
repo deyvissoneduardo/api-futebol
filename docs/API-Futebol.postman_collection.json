@@ -956,6 +956,284 @@
 				}
 			],
 			"description": "Operações de consulta de rankings de estatísticas dos usuários"
+		},
+		{
+			"name": "Jogos",
+			"item": [
+				{
+					"name": "Criar Jogo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"gameDate\": \"2024-12-25T19:00:00-03:00\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/games",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"games"
+							]
+						},
+						"description": "Cria um novo jogo no sistema.\n\n**Permissões:** ADMIN, SUPER_ADMIN\n\n**Validações:**\n- gameDate: Obrigatório, data e hora do jogo no formato ISO 8601 (yyyy-MM-dd'T'HH:mm:ssXXX)\n\n**Regras de Negócio:**\n- Jogo é criado com lista não liberada (released = false)\n- Data do jogo deve ser futura\n\n**Resposta:**\n- 201: GameResponse com os dados do jogo criado\n\n**Estrutura de GameResponse:**\n- id: UUID do jogo\n- gameDate: Data e hora do jogo\n- released: Indica se a lista está liberada\n- createdAt: Data de criação\n- updatedAt: Data de atualização\n\n**Erros:**\n- 400: Dados inválidos\n- 401: Não autorizado\n- 403: Acesso negado"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Jogos",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/games",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"games"
+							]
+						},
+						"description": "Lista todos os jogos ordenados por data.\n\n**Permissões:** JOGADOR, ADMIN, SUPER_ADMIN\n\n**Resposta:**\n- 200: Array de GameResponse ordenado por data\n\n**Estrutura de GameResponse:**\n- id: UUID do jogo\n- gameDate: Data e hora do jogo\n- released: Indica se a lista está liberada\n- createdAt: Data de criação\n- updatedAt: Data de atualização"
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar Jogo por ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/games/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"games",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "UUID do jogo"
+								}
+							]
+						},
+						"description": "Busca um jogo específico pelo ID.\n\n**Permissões:** JOGADOR, ADMIN, SUPER_ADMIN\n\n**Parâmetros:**\n- id (path): UUID do jogo\n\n**Resposta:**\n- 200: GameResponse com os dados do jogo\n\n**Erros:**\n- 401: Não autorizado\n- 404: Jogo não encontrado"
+					},
+					"response": []
+				},
+				{
+					"name": "Liberar Lista do Jogo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/games/:id/release",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"games",
+								":id",
+								"release"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "UUID do jogo"
+								}
+							]
+						},
+						"description": "Libera a lista de confirmação de um jogo, permitindo que jogadores confirmem seus nomes.\n\n**Permissões:** ADMIN, SUPER_ADMIN\n\n**Parâmetros:**\n- id (path): UUID do jogo\n\n**Regras de Negócio:**\n- Define released = true para o jogo\n- Após liberar, jogadores podem confirmar seus nomes\n\n**Resposta:**\n- 200: GameResponse com os dados atualizados do jogo\n\n**Erros:**\n- 401: Não autorizado\n- 403: Acesso negado\n- 404: Jogo não encontrado"
+					},
+					"response": []
+				}
+			],
+			"description": "Operações de gerenciamento de jogos"
+		},
+		{
+			"name": "Confirmações de Jogos",
+			"item": [
+				{
+					"name": "Confirmar Nome no Jogo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"confirmedName\": \"João Silva\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/games/:gameId/confirmations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"games",
+								":gameId",
+								"confirmations"
+							],
+							"variable": [
+								{
+									"key": "gameId",
+									"value": "",
+									"description": "UUID do jogo"
+								}
+							]
+						},
+						"description": "Confirma um nome para o jogo. O usuário autenticado confirma seu nome no jogo.\n\n**Permissões:** JOGADOR, ADMIN, SUPER_ADMIN\n\n**Parâmetros:**\n- gameId (path): UUID do jogo\n\n**Validações:**\n- confirmedName: Obrigatório, máximo 255 caracteres\n\n**Regras de Negócio:**\n- Lista do jogo deve estar liberada (released = true)\n- Jogo não pode ter iniciado ainda\n- Usuário só pode confirmar uma vez por jogo\n- Nome confirmado não pode ser duplicado no mesmo jogo\n\n**Resposta:**\n- 201: GameConfirmationResponse com os dados da confirmação\n\n**Estrutura de GameConfirmationResponse:**\n- id: UUID da confirmação\n- gameId: UUID do jogo\n- userId: UUID do usuário\n- confirmedName: Nome confirmado\n- confirmedAt: Data e hora da confirmação\n- createdAt: Data de criação\n- updatedAt: Data de atualização\n\n**Erros:**\n- 400: Dados inválidos ou jogo já iniciou\n- 401: Não autorizado\n- 403: Lista não está liberada\n- 409: Nome já confirmado ou usuário já confirmou"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Confirmações do Jogo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/games/:gameId/confirmations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"games",
+								":gameId",
+								"confirmations"
+							],
+							"variable": [
+								{
+									"key": "gameId",
+									"value": "",
+									"description": "UUID do jogo"
+								}
+							]
+						},
+						"description": "Lista todas as confirmações de um jogo (lista completa).\n\n**Permissões:** ADMIN, SUPER_ADMIN\n\n**Parâmetros:**\n- gameId (path): UUID do jogo\n\n**Resposta:**\n- 200: GameConfirmationListResponse contendo:\n  - gameId: UUID do jogo\n  - confirmations: Lista de GameConfirmationResponse\n  - total: Total de confirmações\n\n**Estrutura de GameConfirmationResponse:**\n- id: UUID da confirmação\n- gameId: UUID do jogo\n- userId: UUID do usuário\n- confirmedName: Nome confirmado\n- confirmedAt: Data e hora da confirmação\n- createdAt: Data de criação\n- updatedAt: Data de atualização\n\n**Erros:**\n- 401: Não autorizado\n- 403: Acesso negado\n- 404: Jogo não encontrado"
+					},
+					"response": []
+				},
+				{
+					"name": "Minha Confirmação no Jogo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/games/:gameId/confirmations/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"games",
+								":gameId",
+								"confirmations",
+								"me"
+							],
+							"variable": [
+								{
+									"key": "gameId",
+									"value": "",
+									"description": "UUID do jogo"
+								}
+							]
+						},
+						"description": "Retorna a confirmação do usuário autenticado para o jogo especificado.\n\n**Permissões:** JOGADOR, ADMIN, SUPER_ADMIN\n\n**Parâmetros:**\n- gameId (path): UUID do jogo\n\n**Resposta:**\n- 200: GameConfirmationResponse com os dados da confirmação do usuário logado\n\n**Estrutura de GameConfirmationResponse:**\n- id: UUID da confirmação\n- gameId: UUID do jogo\n- userId: UUID do usuário\n- confirmedName: Nome confirmado\n- confirmedAt: Data e hora da confirmação\n- createdAt: Data de criação\n- updatedAt: Data de atualização\n\n**Erros:**\n- 401: Não autorizado\n- 404: Confirmação não encontrada"
+					},
+					"response": []
+				}
+			],
+			"description": "Operações de confirmação de nomes em jogos"
 		}
 	],
 	"variable": [

@@ -79,8 +79,6 @@ public class UserService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new BusinessException("E-mail já está em uso");
         }
-        System.out.println("CHEGOU AQUI 03 " + request);
-
         User user = User.builder()
                 .fullName(request.getFullName())
                 .email(request.getEmail())
@@ -89,8 +87,6 @@ public class UserService {
                 .profile(request.getProfile() != null ? request.getProfile() : UserProfile.JOGADOR)
                 .active(true)
                 .build();
-
-        System.out.println("CHEGOU AQUI 04 " + user);
 
         userRepository.persist(user);
         return toResponse(user);

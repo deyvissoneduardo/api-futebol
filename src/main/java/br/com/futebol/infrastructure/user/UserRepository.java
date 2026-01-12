@@ -55,6 +55,16 @@ public class UserRepository implements PanacheRepositoryBase<User, UUID> {
     }
 
     /**
+     * Busca um usuário pelo ID (sem filtro de ativo).
+     *
+     * @param id o ID do usuário
+     * @return Optional contendo o usuário se encontrado
+     */
+    public Optional<User> findByIdOptional(UUID id) {
+        return find("id = ?1", id).firstResultOptional();
+    }
+
+    /**
      * Busca um usuário ativo pelo ID.
      *
      * @param id o ID do usuário

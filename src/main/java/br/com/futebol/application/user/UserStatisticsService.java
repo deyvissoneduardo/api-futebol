@@ -53,7 +53,6 @@ public class UserStatisticsService {
         if (user.getProfile() == UserProfile.SUPER_ADMIN) {
             throw new BusinessException("Usuários SUPER_ADMIN não possuem estatísticas");
         }
-        System.out.println("CHEGOU AQUI 001 " + userId);
         UserStatistics statistics = userStatisticsRepository.findByUserId(userId)
                 .orElseGet(() -> createDefaultStatistics(user));
 
