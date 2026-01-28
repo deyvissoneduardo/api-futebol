@@ -1,15 +1,22 @@
 package br.com.futebol.application.game;
 
+import br.com.futebol.application.user.UserStatisticsService;
 import br.com.futebol.core.exceptions.BusinessException;
 import br.com.futebol.core.exceptions.ForbiddenException;
 import br.com.futebol.core.exceptions.ResourceNotFoundException;
 import br.com.futebol.domain.game.Game;
+import br.com.futebol.domain.game.GameConfirmation;
 import br.com.futebol.domain.user.UserProfile;
+import br.com.futebol.infrastructure.game.GameConfirmationRepository;
 import br.com.futebol.infrastructure.game.GameRepository;
 import br.com.futebol.infrastructure.user.UserRepository;
+import br.com.futebol.interfaces.game.BulkUpdateStatisticsRequest;
+import br.com.futebol.interfaces.game.BulkUpdateStatisticsResponse;
 import br.com.futebol.interfaces.game.CreateGameRequest;
 import br.com.futebol.interfaces.game.CreateGameResponse;
 import br.com.futebol.interfaces.game.GameResponse;
+import br.com.futebol.interfaces.user.UpdateStatisticsRequest;
+import br.com.futebol.interfaces.user.UserStatisticsResponse;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -35,6 +42,12 @@ public class GameService {
 
     @Inject
     UserRepository userRepository;
+
+    @Inject
+    GameConfirmationRepository gameConfirmationRepository;
+
+    @Inject
+    UserStatisticsService userStatisticsService;
 
     /**
      * Lista o único jogo com released = true.
@@ -167,6 +180,68 @@ public class GameService {
         game.setReleased(false);
         gameRepository.persist(game);
         return toResponse(game);
+    }
+
+    /**
+     * Atualiza estatísticas de todos os jogadores confirmados em um jogo.
+     * Apenas ADMIN ou SUPER_ADMIN podem executar esta operação.
+     *
+     * @param gameId o ID do jogo
+     * @param request os dados de atualização de estatísticas
+     * @param userId o ID do usuário que está executando a operação
+     * @return BulkUpdateStatisticsResponse com as estatísticas atualizadas
+     * @throws ResourceNotFoundException se o jogo não for encontrado
+     * @throws ForbiddenException se o usuário não tiver permissão
+     * @throws BusinessException se algum userId não estiver confirmado no jogo
+     */
+    @Transactional
+    public BulkUpdateStatisticsResponse bulkUpdateStatistics(UUID gameId, BulkUpdateStatisticsRequest request, UUID userId) {
+        var user = userRepository.findByIdOptional(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", userId));
+
+        if (user.getProfile() != UserProfile.ADMIN && user.getProfile() != UserProfile.SUPER_ADMIN) {
+            throw new ForbiddenException("Apenas ADMIN ou SUPER_ADMIN podem atualizar estatísticas");
+        }
+
+        Game game = gameRepository.findByIdOptional(gameId)
+                .orElseThrow(() -> new ResourceNotFoundException("Jogo", "id", gameId));
+
+        // Buscar todas as confirmações do jogo
+        List<GameConfirmation> confirmations = gameConfirmationRepository.findByGameId(gameId);
+        List<UUID> confirmedUserIds = confirmations.stream()
+                .map(GameConfirmation::getUserId)
+                .collect(Collectors.toList());
+
+        // Validar que todos os userIds na requisição estão confirmados
+        for (BulkUpdateStatisticsRequest.PlayerStatisticsUpdate update : request.getStatistics()) {
+            if (!confirmedUserIds.contains(update.getUserId())) {
+                throw new BusinessException(
+                        String.format("Usuário %s não está confirmado nesta partida", update.getUserId())
+                );
+            }
+        }
+
+        // Atualizar estatísticas de cada jogador
+        List<UserStatisticsResponse> updatedStatistics = request.getStatistics().stream()
+                .map(update -> {
+                    UpdateStatisticsRequest statsRequest = UpdateStatisticsRequest.builder()
+                            .minutesPlayed(update.getMinutesPlayed())
+                            .goals(update.getGoals())
+                            .complaints(update.getComplaints())
+                            .victories(update.getVictories())
+                            .draws(update.getDraws())
+                            .defeats(update.getDefeats())
+                            .build();
+
+                    return userStatisticsService.updateStatistics(userId, update.getUserId(), statsRequest);
+                })
+                .collect(Collectors.toList());
+
+        return BulkUpdateStatisticsResponse.builder()
+                .gameId(gameId)
+                .updatedCount(updatedStatistics.size())
+                .statistics(updatedStatistics)
+                .build();
     }
 
     /**

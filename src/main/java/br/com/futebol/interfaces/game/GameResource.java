@@ -107,5 +107,24 @@ public class GameResource {
         GameResponse game = gameService.releaseGame(id, userId);
         return Response.ok(game).build();
     }
+
+    @PUT
+    @Path("/{gameId}/statistics/bulk-update")
+    @RolesAllowed({"ADMIN", "SUPER_ADMIN"})
+    @SecurityRequirement(name = "jwt")
+    @Operation(summary = "Atualizar estatísticas em lote", description = "Atualiza estatísticas de todos os jogadores confirmados em um jogo (apenas ADMIN/SUPER_ADMIN)")
+    @APIResponses({
+            @APIResponse(responseCode = "200", description = "Estatísticas atualizadas com sucesso",
+                    content = @Content(schema = @Schema(implementation = BulkUpdateStatisticsResponse.class))),
+            @APIResponse(responseCode = "400", description = "Dados inválidos ou usuário não confirmado"),
+            @APIResponse(responseCode = "401", description = "Não autorizado"),
+            @APIResponse(responseCode = "403", description = "Acesso negado"),
+            @APIResponse(responseCode = "404", description = "Jogo não encontrado")
+    })
+    public Response bulkUpdateStatistics(@PathParam("gameId") UUID gameId, @Valid BulkUpdateStatisticsRequest request) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        BulkUpdateStatisticsResponse response = gameService.bulkUpdateStatistics(gameId, request, userId);
+        return Response.ok(response).build();
+    }
 }
 
