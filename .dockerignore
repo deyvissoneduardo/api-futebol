@@ -1,5 +1,9 @@
-*
-!target/*-runner
-!target/*-runner.jar
-!target/lib/*
-!target/quarkus-app/*
+# Não enviar lixo pro Docker
+target
+.git
+.gitignore
+.idea
+.cursor
+.vscode
+docs
+.env
