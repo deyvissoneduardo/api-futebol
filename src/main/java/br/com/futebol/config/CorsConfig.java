@@ -57,10 +57,8 @@ public class CorsConfig implements ContainerResponseFilter {
         
         MultivaluedMap<String, Object> headers = responseContext.getHeaders();
         
-        // Obtém a origem da requisição
         String origin = requestContext.getHeaderString("Origin");
         
-        // Verifica se a origem está na lista de origens permitidas
         if (origin != null && isOriginAllowed(origin)) {
             headers.add("Access-Control-Allow-Origin", origin);
         } else if (allowedOrigins.contains("*")) {
@@ -68,18 +66,15 @@ public class CorsConfig implements ContainerResponseFilter {
             headers.add("Access-Control-Allow-Origin", "*");
         }
         
-        // Headers CORS padrão
         headers.add("Access-Control-Allow-Methods", allowedMethods);
         headers.add("Access-Control-Allow-Headers", allowedHeaders);
         headers.add("Access-Control-Expose-Headers", exposedHeaders);
         headers.add("Access-Control-Max-Age", maxAge);
         
-        // Permite credenciais (cookies, authorization headers, etc.)
         if (allowCredentials) {
             headers.add("Access-Control-Allow-Credentials", "true");
         }
         
-        // Responde imediatamente para requisições OPTIONS (preflight)
         if ("OPTIONS".equalsIgnoreCase(requestContext.getMethod())) {
             responseContext.setStatus(200);
         }

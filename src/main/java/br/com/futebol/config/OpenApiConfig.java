@@ -28,7 +28,7 @@ import org.eclipse.microprofile.openapi.annotations.servers.Server;
         ),
         servers = {
                 @Server(url = "http://localhost:8080", description = "Servidor de Desenvolvimento"),
-                @Server(url = "https://api.futebol.com", description = "Servidor de Produção")
+                @Server(url = "https://api-futebol-06387567b79a.herokuapp.com/", description = "Servidor de Produção")
         }
 )
 @SecurityScheme(
