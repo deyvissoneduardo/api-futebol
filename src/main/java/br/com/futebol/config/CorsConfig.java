@@ -14,7 +14,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 public class CorsConfig implements ContainerResponseFilter {
 
     @Inject
-    @ConfigProperty(name = "cors.allowed-origins", defaultValue = "https://confirm-name-today.vercel.app,http://localhost:3000")
+    @ConfigProperty(name = "cors.allowed-origins", defaultValue = "*")
     String allowedOrigins;
 
     @Inject
@@ -22,15 +22,15 @@ public class CorsConfig implements ContainerResponseFilter {
     String allowedMethods;
 
     @Inject
-    @ConfigProperty(name = "cors.allowed-headers", defaultValue = "Content-Type,Authorization,X-Requested-With,Accept,Origin")
+    @ConfigProperty(name = "cors.allowed-headers", defaultValue = "*")
     String allowedHeaders;
 
     @Inject
-    @ConfigProperty(name = "cors.exposed-headers", defaultValue = "Authorization")
+    @ConfigProperty(name = "cors.exposed-headers", defaultValue = "*")
     String exposedHeaders;
 
     @Inject
-    @ConfigProperty(name = "cors.allow-credentials", defaultValue = "true")
+    @ConfigProperty(name = "cors.allow-credentials", defaultValue = "false")
     boolean allowCredentials;
 
     @Inject
@@ -44,11 +44,12 @@ public class CorsConfig implements ContainerResponseFilter {
         MultivaluedMap<String, Object> headers = responseContext.getHeaders();
 
         String origin = requestContext.getHeaderString("Origin");
+        boolean allowAll = "*".equals(allowedOrigins != null ? allowedOrigins.trim() : "");
 
-        if (origin != null && isOriginAllowed(origin)) {
-            headers.add("Access-Control-Allow-Origin", origin);
-        } else if (allowedOrigins.contains("*")) {
+        if (allowAll) {
             headers.add("Access-Control-Allow-Origin", "*");
+        } else if (origin != null && isOriginAllowed(origin)) {
+            headers.add("Access-Control-Allow-Origin", origin);
         }
 
         headers.add("Access-Control-Allow-Methods", allowedMethods);
@@ -56,7 +57,8 @@ public class CorsConfig implements ContainerResponseFilter {
         headers.add("Access-Control-Expose-Headers", exposedHeaders);
         headers.add("Access-Control-Max-Age", maxAge);
 
-        if (allowCredentials) {
+        // Com Allow-Origin: * não é possível usar credentials (especificação CORS)
+        if (allowCredentials && !allowAll) {
             headers.add("Access-Control-Allow-Credentials", "true");
         }
 
