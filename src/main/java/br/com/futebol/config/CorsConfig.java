@@ -28,7 +28,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 public class CorsConfig implements ContainerResponseFilter {
 
     @Inject
-    @ConfigProperty(name = "cors.allowed-origins", defaultValue = "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000")
+    @ConfigProperty(name = "cors.allowed-origins", defaultValue = "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,https://confirm-name-today.vercel.app")
     String allowedOrigins;
 
     @Inject
