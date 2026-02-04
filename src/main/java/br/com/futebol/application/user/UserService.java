@@ -17,9 +17,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Serviço para operações de CRUD de usuários.
- */
 @ApplicationScoped
 public class UserService {
 
@@ -30,8 +27,6 @@ public class UserService {
     PasswordService passwordService;
 
     /**
-     * Lista todos os usuários ativos.
-     *
      * @return lista de UserResponse
      */
     public List<UserResponse> findAll() {
@@ -41,43 +36,36 @@ public class UserService {
     }
 
     /**
-     * Busca um usuário pelo ID.
-     *
-     * @param id o ID do usuário
-     * @return UserResponse com os dados do usuário
-     * @throws ResourceNotFoundException se o usuário não for encontrado
+     * @param id o ID do usuario
+     * @return UserResponse com os dados do usuario
+     * @throws ResourceNotFoundException se o usuario não for encontrado
      */
     public UserResponse findById(UUID id) {
         User user = userRepository.findActiveById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", id));
         return toResponse(user);
     }
 
     /**
-     * Busca um usuário pelo e-mail.
-     *
-     * @param email o e-mail do usuário
-     * @return UserResponse com os dados do usuário
-     * @throws ResourceNotFoundException se o usuário não for encontrado
+     * @param email o e-mail do usuario
+     * @return UserResponse com os dados do usuario
+     * @throws ResourceNotFoundException se o usuario nao for encontrado
      */
     public UserResponse findByEmail(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "email", email));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", email));
         return toResponse(user);
     }
 
     /**
-     * Cria um novo usuário.
-     *
-     * @param request os dados do novo usuário
-     * @return UserResponse com os dados do usuário criado
-     * @throws BusinessException se o e-mail já estiver em uso
+     * @param request os dados do novo usuario
+     * @return UserResponse com os dados do usuario criado
+     * @throws BusinessException se o e-mail ja estiver em uso
      */
     @Transactional
     public UserResponse create(CreateUserRequest request) {
-        System.out.println("CHEGOU AQUI 02 " + request);
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new BusinessException("E-mail já está em uso");
+            throw new BusinessException("E-mail ja está em uso");
         }
         User user = User.builder()
                 .fullName(request.getFullName())
@@ -93,22 +81,20 @@ public class UserService {
     }
 
     /**
-     * Atualiza um usuário existente.
-     *
-     * @param id o ID do usuário
+     * @param id o ID do usuario
      * @param request os dados atualizados
-     * @return UserResponse com os dados do usuário atualizado
-     * @throws ResourceNotFoundException se o usuário não for encontrado
-     * @throws BusinessException se o e-mail já estiver em uso por outro usuário
+     * @return UserResponse com os dados do usuario atualizado
+     * @throws ResourceNotFoundException se o usuario não for encontrado
+     * @throws BusinessException se o e-mail ja estiver em uso por outro usuario
      */
     @Transactional
     public UserResponse update(UUID id, UpdateUserRequest request) {
         User user = userRepository.findActiveById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", id));
 
         if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
             if (userRepository.existsByEmailAndIdNot(request.getEmail(), id)) {
-                throw new BusinessException("E-mail já está em uso");
+                throw new BusinessException("E-mail ja está em uso");
             }
             user.setEmail(request.getEmail());
         }
@@ -134,23 +120,19 @@ public class UserService {
     }
 
     /**
-     * Deleta (desativa) um usuário.
-     *
-     * @param id o ID do usuário
-     * @throws ResourceNotFoundException se o usuário não for encontrado
+     * @param id o ID do usuario
+     * @throws ResourceNotFoundException se o usuario nao for encontrado
      */
     @Transactional
     public void delete(UUID id) {
         User user = userRepository.findActiveById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", id));
 
         user.setActive(false);
         userRepository.persist(user);
     }
 
     /**
-     * Converte uma entidade User para UserResponse.
-     *
      * @param user a entidade User
      * @return UserResponse
      */

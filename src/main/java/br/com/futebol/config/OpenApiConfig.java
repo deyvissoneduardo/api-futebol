@@ -10,7 +10,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.servers.Server;
 
 /**
- * Configuração do OpenAPI/Swagger.
+ * Configuracao do OpenAPI/Swagger.
  */
 @OpenAPIDefinition(
         info = @Info(

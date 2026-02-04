@@ -4,9 +4,7 @@ import lombok.*;
 
 import java.util.List;
 
-/**
- * DTO de resposta para ranking.
- */
+
 @Getter
 @Setter
 @NoArgsConstructor

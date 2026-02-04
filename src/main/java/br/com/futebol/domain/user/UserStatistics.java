@@ -12,10 +12,6 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-/**
- * Entidade UserStatistics representando as estatísticas de um usuário.
- * Apenas usuários com perfil ADMIN ou JOGADOR possuem estatísticas.
- */
 @Entity
 @Table(name = "user_statistics")
 @Getter

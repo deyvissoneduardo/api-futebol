@@ -8,15 +8,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository para operações de persistência da entidade Game.
- */
 @ApplicationScoped
 public class GameRepository implements PanacheRepositoryBase<Game, UUID> {
 
     /**
-     * Lista todos os jogos ordenados por data.
-     *
      * @return lista de jogos
      */
     public List<Game> findAllOrderedByDate() {
@@ -24,8 +19,6 @@ public class GameRepository implements PanacheRepositoryBase<Game, UUID> {
     }
 
     /**
-     * Busca um jogo pelo ID.
-     *
      * @param id o ID do jogo
      * @return Optional contendo o jogo se encontrado
      */
@@ -34,8 +27,6 @@ public class GameRepository implements PanacheRepositoryBase<Game, UUID> {
     }
 
     /**
-     * Busca todos os jogos com released = true.
-     *
      * @return lista de jogos com released = true
      */
     public List<Game> findAllReleased() {
@@ -43,8 +34,6 @@ public class GameRepository implements PanacheRepositoryBase<Game, UUID> {
     }
 
     /**
-     * Busca o único jogo com released = true.
-     *
      * @return Optional contendo o jogo se encontrado
      */
     public Optional<Game> findReleased() {

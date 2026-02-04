@@ -5,9 +5,6 @@ import lombok.*;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * DTO de resposta para lista de confirmações de um jogo.
- */
 @Getter
 @Setter
 @NoArgsConstructor

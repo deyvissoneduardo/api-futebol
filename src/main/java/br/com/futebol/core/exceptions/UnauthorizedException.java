@@ -1,8 +1,5 @@
 package br.com.futebol.core.exceptions;
 
-/**
- * Exceção para erros de autenticação/autorização.
- */
 public class UnauthorizedException extends RuntimeException {
 
     public UnauthorizedException(String message) {
@@ -10,7 +7,7 @@ public class UnauthorizedException extends RuntimeException {
     }
 
     public UnauthorizedException() {
-        super("Credenciais inválidas");
+        super("Credenciais invalidas");
     }
 }
 

@@ -4,9 +4,7 @@ import lombok.*;
 
 import java.util.UUID;
 
-/**
- * DTO de item de ranking.
- */
+
 @Getter
 @Setter
 @NoArgsConstructor

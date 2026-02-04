@@ -11,9 +11,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * Serviço para operações de autenticação.
- */
 @ApplicationScoped
 @Slf4j
 public class AuthService {
@@ -28,29 +25,27 @@ public class AuthService {
     JwtService jwtService;
 
     /**
-     * Realiza o login do usuário.
-     *
      * @param request os dados de login (email e senha)
      * @return LoginResponse com o token JWT
-     * @throws UnauthorizedException se as credenciais forem inválidas
+     * @throws UnauthorizedException se as credenciais forem invalidas
      */
     public LoginResponse login(LoginRequest request) {
         log.info("Tentativa de login para o email: {}", request.getEmail());
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> {
-                    log.warn("Usuário não encontrado: {}", request.getEmail());
-                    return new UnauthorizedException("Credenciais inválidas");
+                    log.warn("Usuario nao encontrado: {}", request.getEmail());
+                    return new UnauthorizedException("Credenciais invalidas");
                 });
 
         if (!user.getActive()) {
-            log.warn("Tentativa de login de usuário inativo: {}", request.getEmail());
-            throw new UnauthorizedException("Usuário inativo");
+            log.warn("Tentativa de login de usuario inativo: {}", request.getEmail());
+            throw new UnauthorizedException("Usuario inativo");
         }
 
         if (!passwordService.verifyPassword(request.getPassword(), user.getPassword())) {
-            log.warn("Senha inválida para o usuário: {}", request.getEmail());
-            throw new UnauthorizedException("Credenciais inválidas");
+            log.warn("Senha invalida para o usuario: {}", request.getEmail());
+            throw new UnauthorizedException("Credenciais invalidas");
         }
 
         String token = jwtService.generateToken(user);

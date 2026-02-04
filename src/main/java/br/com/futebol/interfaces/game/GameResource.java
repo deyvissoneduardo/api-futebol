@@ -22,13 +22,10 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Resource para operações de jogos.
- */
 @Path("/api/games")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Tag(name = "Jogos", description = "Operações de gerenciamento de jogos")
+@Tag(name = "Jogos", description = "Operacoes de gerenciamento de jogos")
 @SecurityScheme(
         securitySchemeName = "jwt",
         type = SecuritySchemeType.HTTP,
@@ -67,7 +64,7 @@ public class GameResource {
     @APIResponses({
             @APIResponse(responseCode = "200", description = "Lista de jogos",
                     content = @Content(schema = @Schema(implementation = GameResponse.class))),
-            @APIResponse(responseCode = "401", description = "Não autorizado")
+            @APIResponse(responseCode = "401", description = "Nao autorizado")
     })
     public Response findAll() {
         List<GameResponse> games = gameService.findAll();
@@ -82,8 +79,8 @@ public class GameResource {
     @APIResponses({
             @APIResponse(responseCode = "200", description = "Jogo encontrado",
                     content = @Content(schema = @Schema(implementation = GameResponse.class))),
-            @APIResponse(responseCode = "401", description = "Não autorizado"),
-            @APIResponse(responseCode = "404", description = "Jogo não encontrado")
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
+            @APIResponse(responseCode = "404", description = "Jogo nao encontrado")
     })
     public Response findById(@PathParam("id") UUID id) {
         GameResponse game = gameService.findById(id);
@@ -94,13 +91,13 @@ public class GameResource {
     @Path("/{id}/release")
     @RolesAllowed({"ADMIN", "SUPER_ADMIN"})
     @SecurityRequirement(name = "jwt")
-    @Operation(summary = "Iniciar jogo", description = "Inicia o jogo, bloqueando novas confirmações (apenas ADMIN/SUPER_ADMIN)")
+    @Operation(summary = "Iniciar jogo", description = "Inicia o jogo, bloqueando novas confirmacoes (apenas ADMIN/SUPER_ADMIN)")
     @APIResponses({
             @APIResponse(responseCode = "200", description = "Jogo iniciado com sucesso",
                     content = @Content(schema = @Schema(implementation = GameResponse.class))),
-            @APIResponse(responseCode = "401", description = "Não autorizado"),
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado"),
-            @APIResponse(responseCode = "404", description = "Jogo não encontrado")
+            @APIResponse(responseCode = "404", description = "Jogo nao encontrado")
     })
     public Response release(@PathParam("id") UUID id) {
         UUID userId = UUID.fromString(jwt.getSubject());

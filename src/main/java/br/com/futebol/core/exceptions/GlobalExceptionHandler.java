@@ -12,9 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * Handler global de exceções para a API REST.
- */
 @Provider
 @Slf4j
 public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
@@ -51,7 +48,7 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
         }
 
         if (exception instanceof jakarta.ws.rs.NotAuthorizedException) {
-            return buildResponse(Response.Status.UNAUTHORIZED, "Acesso não autorizado");
+            return buildResponse(Response.Status.UNAUTHORIZED, "Acesso nao autorizado");
         }
 
         if (exception instanceof jakarta.ws.rs.ForbiddenException) {

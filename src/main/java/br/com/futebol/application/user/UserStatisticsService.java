@@ -24,9 +24,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-/**
- * Serviço para operações de estatísticas de usuários.
- */
 @ApplicationScoped
 public class UserStatisticsService {
 
@@ -37,21 +34,17 @@ public class UserStatisticsService {
     UserRepository userRepository;
 
     /**
-     * Busca estatísticas de um usuário pelo ID.
-     * Cria automaticamente se não existir.
-     *
-     * @param userId o ID do usuário
-     * @return UserStatisticsResponse com os dados das estatísticas
-     * @throws ResourceNotFoundException se o usuário não for encontrado
-     * @throws BusinessException se o usuário for SUPER_ADMIN
+     * @param userId o ID do usuario
+     * @return UserStatisticsResponse com os dados das estatisticas
+     * @throws ResourceNotFoundException se o usuario não for encontrado
+     * @throws BusinessException se o usuario for SUPER_ADMIN
      */
     public UserStatisticsResponse findByUserId(UUID userId) {
         User user = userRepository.findActiveById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", userId));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
 
-        // SUPER_ADMIN não possui estatísticas
         if (user.getProfile() == UserProfile.SUPER_ADMIN) {
-            throw new BusinessException("Usuários SUPER_ADMIN não possuem estatísticas");
+            throw new BusinessException("Usuarios SUPER_ADMIN nao possuem estatisticas");
         }
         UserStatistics statistics = userStatisticsRepository.findByUserId(userId)
                 .orElseGet(() -> createDefaultStatistics(user));
@@ -60,21 +53,16 @@ public class UserStatisticsService {
     }
 
     /**
-     * Busca estatísticas do usuário autenticado.
-     *
-     * @param userId o ID do usuário autenticado
-     * @return UserStatisticsResponse com os dados das estatísticas
+     * @param userId o ID do usuario autenticado
+     * @return UserStatisticsResponse com os dados das estatisticas
      */
     public UserStatisticsResponse findCurrentUserStatistics(UUID userId) {
         return findByUserId(userId);
     }
 
     /**
-     * Atualiza minutos jogados de um usuário.
-     * Apenas ADMIN pode atualizar.
-     *
-     * @param authenticatedUserId o ID do usuário autenticado
-     * @param targetUserId o ID do usuário alvo
+     * @param authenticatedUserId o ID do usuario autenticado
+     * @param targetUserId o ID do usuario alvo
      * @param minutesToAdd string no formato "HH:mm:ss" (pode ser negativo para subtração)
      * @return UserStatisticsResponse com os dados atualizados
      */
@@ -87,7 +75,6 @@ public class UserStatisticsService {
         Duration durationToAdd = parseDuration(minutesToAdd);
         Duration newDuration = statistics.getMinutesPlayed().plus(durationToAdd);
 
-        // Não permitir valores negativos
         if (newDuration.isNegative()) {
             newDuration = Duration.ZERO;
         }
@@ -99,11 +86,8 @@ public class UserStatisticsService {
     }
 
     /**
-     * Atualiza gols de um usuário (soma/subtrai).
-     * Apenas ADMIN pode atualizar.
-     *
-     * @param authenticatedUserId o ID do usuário autenticado
-     * @param targetUserId o ID do usuário alvo
+     * @param authenticatedUserId o ID do usuario autenticado
+     * @param targetUserId o ID do usuario alvo
      * @param value valor a somar/subtrair (positivo soma, negativo subtrai)
      * @return UserStatisticsResponse com os dados atualizados
      */
@@ -121,11 +105,8 @@ public class UserStatisticsService {
     }
 
     /**
-     * Atualiza reclamações de um usuário (soma/subtrai).
-     * Apenas ADMIN pode atualizar.
-     *
-     * @param authenticatedUserId o ID do usuário autenticado
-     * @param targetUserId o ID do usuário alvo
+     * @param authenticatedUserId o ID do usuario autenticado
+     * @param targetUserId o ID do usuario alvo
      * @param value valor a somar/subtrair (positivo soma, negativo subtrai)
      * @return UserStatisticsResponse com os dados atualizados
      */
@@ -143,11 +124,8 @@ public class UserStatisticsService {
     }
 
     /**
-     * Atualiza vitórias de um usuário (soma/subtrai).
-     * Apenas ADMIN pode atualizar.
-     *
-     * @param authenticatedUserId o ID do usuário autenticado
-     * @param targetUserId o ID do usuário alvo
+     * @param authenticatedUserId o ID do usuario autenticado
+     * @param targetUserId o ID do usuario alvo
      * @param value valor a somar/subtrair (positivo soma, negativo subtrai)
      * @return UserStatisticsResponse com os dados atualizados
      */
@@ -165,11 +143,8 @@ public class UserStatisticsService {
     }
 
     /**
-     * Atualiza empates de um usuário (soma/subtrai).
-     * Apenas ADMIN pode atualizar.
-     *
-     * @param authenticatedUserId o ID do usuário autenticado
-     * @param targetUserId o ID do usuário alvo
+     * @param authenticatedUserId o ID do usuario autenticado
+     * @param targetUserId o ID do usuario alvo
      * @param value valor a somar/subtrair (positivo soma, negativo subtrai)
      * @return UserStatisticsResponse com os dados atualizados
      */
@@ -187,11 +162,8 @@ public class UserStatisticsService {
     }
 
     /**
-     * Atualiza derrotas de um usuário (soma/subtrai).
-     * Apenas ADMIN pode atualizar.
-     *
-     * @param authenticatedUserId o ID do usuário autenticado
-     * @param targetUserId o ID do usuário alvo
+     * @param authenticatedUserId o ID do usuario autenticado
+     * @param targetUserId o ID do usuario alvo
      * @param value valor a somar/subtrair (positivo soma, negativo subtrai)
      * @return UserStatisticsResponse com os dados atualizados
      */
@@ -209,11 +181,8 @@ public class UserStatisticsService {
     }
 
     /**
-     * Atualiza todas as estatísticas de uma vez.
-     * Apenas ADMIN pode atualizar.
-     *
-     * @param authenticatedUserId o ID do usuário autenticado
-     * @param targetUserId o ID do usuário alvo
+     * @param authenticatedUserId o ID do usuario autenticado
+     * @param targetUserId o ID do usuario alvo
      * @param request o DTO com os dados a atualizar
      * @return UserStatisticsResponse com os dados atualizados
      */
@@ -258,54 +227,46 @@ public class UserStatisticsService {
     }
 
     /**
-     * Valida se o usuário autenticado é ADMIN ou SUPER_ADMIN.
-     *
-     * @param userId o ID do usuário autenticado
-     * @throws UnauthorizedException se o usuário não for ADMIN ou SUPER_ADMIN
+     * @param userId o ID do usuario autenticado
+     * @throws UnauthorizedException se o usuario não for ADMIN ou SUPER_ADMIN
      */
     private void validateAdminPermission(UUID userId) {
         User user = userRepository.findActiveById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", userId));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
 
         if (user.getProfile() != UserProfile.ADMIN && user.getProfile() != UserProfile.SUPER_ADMIN) {
-            throw new UnauthorizedException("Apenas ADMIN pode atualizar estatísticas");
+            throw new UnauthorizedException("Apenas ADMIN pode atualizar estatisticas");
         }
     }
 
     /**
-     * Valida se o usuário alvo é ADMIN ou JOGADOR (não pode ser SUPER_ADMIN).
-     *
      * @param targetUserId o ID do usuário alvo
      * @throws BusinessException se o usuário for SUPER_ADMIN
      */
     private void validateTargetUser(UUID targetUserId) {
         User targetUser = userRepository.findActiveById(targetUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", targetUserId));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", targetUserId));
 
         if (targetUser.getProfile() == UserProfile.SUPER_ADMIN) {
-            throw new BusinessException("Não é possível atualizar estatísticas de usuários SUPER_ADMIN");
+            throw new BusinessException("Nao e possivel atualizar estatisticas de usuarios SUPER_ADMIN");
         }
     }
 
     /**
-     * Obtém ou cria estatísticas para um usuário.
-     *
-     * @param userId o ID do usuário
+     * @param userId o ID do usuario
      * @return UserStatistics existente ou criado
      */
     private UserStatistics getOrCreateStatistics(UUID userId) {
         return userStatisticsRepository.findByUserId(userId)
                 .orElseGet(() -> {
                     User user = userRepository.findActiveById(userId)
-                            .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", userId));
+                            .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
                     return createDefaultStatistics(user);
                 });
     }
 
     /**
-     * Cria estatísticas padrão para um usuário.
-     *
-     * @param user o usuário
+     * @param user o usuario
      * @return UserStatistics criado
      */
     private UserStatistics createDefaultStatistics(User user) {
@@ -324,12 +285,9 @@ public class UserStatisticsService {
     }
 
     /**
-     * Converte uma string no formato "HH:mm:ss" para Duration.
-     * Suporta valores negativos para subtração.
-     *
      * @param timeString string no formato "HH:mm:ss" ou "H:mm:ss"
      * @return Duration
-     * @throws BusinessException se o formato for inválido
+     * @throws BusinessException se o formato for invalido
      */
     private Duration parseDuration(String timeString) {
         if (timeString == null || timeString.isBlank()) {
@@ -347,7 +305,7 @@ public class UserStatisticsService {
             // Parse do formato HH:mm:ss
             String[] parts = trimmed.split(":");
             if (parts.length != 3) {
-                throw new BusinessException("Formato de minutos inválido. Use HH:mm:ss");
+                throw new BusinessException("Formato de minutos invalido. Use HH:mm:ss");
             }
 
             int hours = Integer.parseInt(parts[0]);
@@ -360,14 +318,12 @@ public class UserStatisticsService {
 
             return isNegative ? duration.negated() : duration;
         } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-            throw new BusinessException("Formato de minutos inválido. Use HH:mm:ss");
+            throw new BusinessException("Formato de minutos invalido. Use HH:mm:ss");
         }
     }
 
     /**
-     * Converte Duration para string no formato "HH:mm:ss".
-     *
-     * @param duration a duração
+     * @param duration a duracao
      * @return string formatada
      */
     private String formatDuration(Duration duration) {
@@ -384,8 +340,6 @@ public class UserStatisticsService {
     }
 
     /**
-     * Busca ranking de gols ordenado do maior para o menor.
-     *
      * @return RankingResponse com ranking de gols
      */
     public RankingResponse getRankingByGoals() {
@@ -401,9 +355,7 @@ public class UserStatisticsService {
     }
 
     /**
-     * Busca ranking de reclamações ordenado do maior para o menor.
-     *
-     * @return RankingResponse com ranking de reclamações
+     * @return RankingResponse com ranking de reclamacoes
      */
     public RankingResponse getRankingByComplaints() {
         List<UserStatistics> statistics = userStatisticsRepository.findRankingByComplaints();
@@ -411,16 +363,14 @@ public class UserStatisticsService {
         
         return RankingResponse.builder()
                 .type("complaints")
-                .description("Ranking de Reclamações")
+                .description("Ranking de Reclamacoes")
                 .items(items)
                 .total(items.size())
                 .build();
     }
 
     /**
-     * Busca ranking de vitórias ordenado do maior para o menor.
-     *
-     * @return RankingResponse com ranking de vitórias
+     * @return RankingResponse com ranking de vitorias
      */
     public RankingResponse getRankingByVictories() {
         List<UserStatistics> statistics = userStatisticsRepository.findRankingByVictories();
@@ -428,15 +378,13 @@ public class UserStatisticsService {
         
         return RankingResponse.builder()
                 .type("victories")
-                .description("Ranking de Vitórias")
+                .description("Ranking de Vitorias")
                 .items(items)
                 .total(items.size())
                 .build();
     }
 
     /**
-     * Busca ranking de empates ordenado do maior para o menor.
-     *
      * @return RankingResponse com ranking de empates
      */
     public RankingResponse getRankingByDraws() {
@@ -452,8 +400,6 @@ public class UserStatisticsService {
     }
 
     /**
-     * Busca ranking de derrotas ordenado do maior para o menor.
-     *
      * @return RankingResponse com ranking de derrotas
      */
     public RankingResponse getRankingByDefeats() {
@@ -469,8 +415,6 @@ public class UserStatisticsService {
     }
 
     /**
-     * Busca ranking de minutos jogados ordenado do maior para o menor.
-     *
      * @return RankingResponse com ranking de minutos jogados
      */
     public RankingResponse getRankingByMinutesPlayed() {
@@ -486,9 +430,7 @@ public class UserStatisticsService {
     }
 
     /**
-     * Constrói lista de itens de ranking a partir das estatísticas.
-     *
-     * @param statistics lista de estatísticas ordenadas
+     * @param statistics lista de estatisticas ordenadas
      * @param type tipo de ranking (goals, complaints, victories, etc)
      * @return lista de RankingItemResponse
      */
@@ -504,7 +446,6 @@ public class UserStatisticsService {
                     
                     User user = userOpt.get();
                     
-                    // Verificar se é ADMIN ou JOGADOR ativo
                     if (user.getProfile() != UserProfile.ADMIN && user.getProfile() != UserProfile.JOGADOR) {
                         return null;
                     }
@@ -556,8 +497,6 @@ public class UserStatisticsService {
     }
 
     /**
-     * Converte uma entidade UserStatistics para UserStatisticsResponse.
-     *
      * @param statistics a entidade UserStatistics
      * @return UserStatisticsResponse
      */

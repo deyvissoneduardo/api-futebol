@@ -5,10 +5,6 @@ import jakarta.persistence.Converter;
 
 import java.time.Duration;
 
-/**
- * Converter para mapear INTERVAL do PostgreSQL para Duration do Java.
- * O PostgreSQL retorna INTERVAL como String via JDBC, então fazemos o parse manualmente.
- */
 @Converter(autoApply = false)
 public class DurationIntervalConverter implements AttributeConverter<Duration, String> {
 

@@ -6,9 +6,6 @@ import lombok.*;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * DTO de resposta para atualização em lote de estatísticas.
- */
 @Getter
 @Setter
 @NoArgsConstructor

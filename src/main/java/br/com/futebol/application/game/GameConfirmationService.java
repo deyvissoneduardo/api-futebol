@@ -21,9 +21,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Serviço para operações de confirmação de nomes em jogos.
- */
 @ApplicationScoped
 public class GameConfirmationService {
 
@@ -37,48 +34,36 @@ public class GameConfirmationService {
     UserRepository userRepository;
 
     /**
-     * Confirma um nome para um jogo.
-     * Um mesmo usuário pode confirmar múltiplos nomes (útil para casos de convidados),
-     * desde que os nomes sejam diferentes.
-     * 
      * Quando isGuest = true, o sistema cria um UUID único para o convidado,
-     * permitindo que estatísticas (gols, minutos, etc.) sejam registradas separadamente.
-     *
      * @param gameId o ID do jogo
-     * @param request os dados da confirmação (pode incluir isGuest para convidados)
-     * @param userId o ID do usuário que está confirmando
-     * @return GameConfirmationResponse com os dados da confirmação criada
+     * @param request os dados da confirmacao (pode incluir isGuest para convidados)
+     * @param userId o ID do usuario que está confirmando
+     * @return GameConfirmationResponse com os dados da confirmacao criada
      * @throws ResourceNotFoundException se o jogo não for encontrado
-     * @throws ForbiddenException se a lista não estiver liberada (released = false)
-     * @throws ConflictException se o nome já estiver confirmado para este jogo
+     * @throws ForbiddenException se a lista nao estiver liberada (released = false)
+     * @throws ConflictException se o nome ja estiver confirmado para este jogo
      */
     @Transactional
     public GameConfirmationResponse confirmName(UUID gameId, ConfirmNameRequest request, UUID userId) {
         Game game = gameRepository.findByIdOptional(gameId)
                 .orElseThrow(() -> new ResourceNotFoundException("Jogo", "id", gameId));
 
-        // Validar se a lista está liberada (released = true permite confirmações)
         if (!game.getReleased()) {
-            throw new ForbiddenException("Lista não está liberada");
+            throw new ForbiddenException("Lista nao está liberada");
         }
 
-        // Validar se o nome já está confirmado para este jogo (única restrição)
         if (gameConfirmationRepository.existsByGameIdAndConfirmedName(gameId, request.getConfirmedName())) {
-            throw new ConflictException("Nome já confirmado para este jogo. Escolha outro nome.");
+            throw new ConflictException("Nome ja confirmado para este jogo. Escolha outro nome.");
         }
 
-        // Se for convidado, gerar um UUID único para o convidado
         UUID finalUserId;
         UUID confirmedByUserId = null;
         Boolean isGuest = request.getIsGuest() != null && request.getIsGuest();
 
         if (isGuest) {
-            // Gera UUID único para o convidado
             finalUserId = UUID.randomUUID();
-            // Salva quem confirmou o convidado
             confirmedByUserId = userId;
         } else {
-            // Usa o userId do usuário logado
             finalUserId = userId;
         }
 
@@ -96,20 +81,18 @@ public class GameConfirmationService {
     }
 
     /**
-     * Lista todas as confirmações de um jogo (apenas para ADMIN/SUPER_ADMIN).
-     *
      * @param gameId o ID do jogo
-     * @param userId o ID do usuário que está consultando
+     * @param userId o ID do usuario que está consultando
      * @return GameConfirmationListResponse com a lista de confirmações
      * @throws ResourceNotFoundException se o jogo não for encontrado
-     * @throws ForbiddenException se o usuário não for ADMIN ou SUPER_ADMIN
+     * @throws ForbiddenException se o usuario não for ADMIN ou SUPER_ADMIN
      */
     public GameConfirmationListResponse listConfirmations(UUID gameId, UUID userId) {
         var user = userRepository.findByIdOptional(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", userId));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
 
         if (user.getProfile() != UserProfile.ADMIN && user.getProfile() != UserProfile.SUPER_ADMIN) {
-            throw new ForbiddenException("Apenas ADMIN ou SUPER_ADMIN podem consultar a lista completa de confirmações");
+            throw new ForbiddenException("Apenas ADMIN ou SUPER_ADMIN podem consultar a lista completa de confirmacoes");
         }
 
         gameRepository.findByIdOptional(gameId)
@@ -128,19 +111,15 @@ public class GameConfirmationService {
     }
 
     /**
-     * Busca todas as confirmações relacionadas ao usuário logado para um jogo.
-     * Inclui confirmações próprias e de convidados confirmados por ele.
-     *
      * @param gameId o ID do jogo
-     * @param userId o ID do usuário
-     * @return Lista de GameConfirmationResponse com as confirmações relacionadas ao usuário
+     * @param userId o ID do usuario
+     * @return Lista de GameConfirmationResponse com as confirmacoes relacionadas ao usuario
      * @throws ResourceNotFoundException se o jogo não for encontrado
      */
     public List<GameConfirmationResponse> findMyConfirmations(UUID gameId, UUID userId) {
         gameRepository.findByIdOptional(gameId)
                 .orElseThrow(() -> new ResourceNotFoundException("Jogo", "id", gameId));
 
-        // Busca confirmações próprias e de convidados confirmados por este usuário
         List<GameConfirmation> confirmations = gameConfirmationRepository.findByGameIdAndUserRelated(gameId, userId);
         
         return confirmations.stream()
@@ -149,8 +128,6 @@ public class GameConfirmationService {
     }
 
     /**
-     * Converte uma entidade GameConfirmation para GameConfirmationResponse.
-     *
      * @param confirmation a entidade GameConfirmation
      * @return GameConfirmationResponse
      */

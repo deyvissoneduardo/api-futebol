@@ -9,9 +9,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-/**
- * Entidade Game representando um jogo semanal.
- */
 @Entity
 @Table(name = "games")
 @Getter

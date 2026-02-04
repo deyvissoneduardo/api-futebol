@@ -9,9 +9,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-/**
- * Entidade GameConfirmation representando uma confirmação de nome em um jogo.
- */
 @Entity
 @Table(name = "game_confirmations")
 @Getter

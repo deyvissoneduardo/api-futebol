@@ -6,9 +6,7 @@ import lombok.*;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-/**
- * DTO de resposta para criação de jogo, incluindo mensagem informativa quando necessário.
- */
+
 @Getter
 @Setter
 @NoArgsConstructor

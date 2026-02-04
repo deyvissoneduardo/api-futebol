@@ -5,9 +5,6 @@ import lombok.*;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-/**
- * DTO de resposta para estatísticas de usuário.
- */
 @Getter
 @Setter
 @NoArgsConstructor

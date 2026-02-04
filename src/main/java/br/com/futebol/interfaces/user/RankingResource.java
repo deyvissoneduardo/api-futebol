@@ -15,13 +15,11 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
-/**
- * Resource para operações de ranking de estatísticas.
- */
+
 @Path("/api/ranking")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Tag(name = "Rankings", description = "Operações de ranking de estatísticas de usuários")
+@Tag(name = "Rankings", description = "Operacoes de ranking de estatisticas de usuarios")
 @SecurityRequirement(name = "jwt")
 public class RankingResource {
 
@@ -33,7 +31,7 @@ public class RankingResource {
 
     @GET
     @Path("/goals")
-    @RolesAllowed({"ADMIN", "JOGADOR", "SUPER_ADMIN"})
+    @RolesAllowed({"ADMIN", "JOGADOR"})
     @Operation(
             summary = "Ranking de Gols",
             description = "Retorna o ranking de gols ordenado do maior para o menor. Apenas ADMIN e JOGADOR podem consultar."
@@ -44,7 +42,7 @@ public class RankingResource {
                     description = "Ranking retornado com sucesso",
                     content = @Content(schema = @Schema(implementation = RankingResponse.class))
             ),
-            @APIResponse(responseCode = "401", description = "Não autorizado"),
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado")
     })
     public Response getRankingByGoals() {
@@ -54,10 +52,10 @@ public class RankingResource {
 
     @GET
     @Path("/complaints")
-    @RolesAllowed({"ADMIN", "JOGADOR", "SUPER_ADMIN"})
+    @RolesAllowed({"ADMIN", "JOGADOR"})
     @Operation(
-            summary = "Ranking de Reclamações",
-            description = "Retorna o ranking de reclamações ordenado do maior para o menor. Apenas ADMIN e JOGADOR podem consultar."
+            summary = "Ranking de Reclamacoes",
+            description = "Retorna o ranking de reclamacoes ordenado do maior para o menor. Apenas ADMIN e JOGADOR podem consultar."
     )
     @APIResponses({
             @APIResponse(
@@ -65,7 +63,7 @@ public class RankingResource {
                     description = "Ranking retornado com sucesso",
                     content = @Content(schema = @Schema(implementation = RankingResponse.class))
             ),
-            @APIResponse(responseCode = "401", description = "Não autorizado"),
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado")
     })
     public Response getRankingByComplaints() {
@@ -75,10 +73,10 @@ public class RankingResource {
 
     @GET
     @Path("/victories")
-    @RolesAllowed({"ADMIN", "JOGADOR", "SUPER_ADMIN"})
+    @RolesAllowed({"ADMIN", "JOGADOR"})
     @Operation(
             summary = "Ranking de Vitórias",
-            description = "Retorna o ranking de vitórias ordenado do maior para o menor. Apenas ADMIN e JOGADOR podem consultar."
+            description = "Retorna o ranking de vitorias ordenado do maior para o menor. Apenas ADMIN e JOGADOR podem consultar."
     )
     @APIResponses({
             @APIResponse(
@@ -86,7 +84,7 @@ public class RankingResource {
                     description = "Ranking retornado com sucesso",
                     content = @Content(schema = @Schema(implementation = RankingResponse.class))
             ),
-            @APIResponse(responseCode = "401", description = "Não autorizado"),
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado")
     })
     public Response getRankingByVictories() {
@@ -107,7 +105,7 @@ public class RankingResource {
                     description = "Ranking retornado com sucesso",
                     content = @Content(schema = @Schema(implementation = RankingResponse.class))
             ),
-            @APIResponse(responseCode = "401", description = "Não autorizado"),
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado")
     })
     public Response getRankingByDraws() {
@@ -128,7 +126,7 @@ public class RankingResource {
                     description = "Ranking retornado com sucesso",
                     content = @Content(schema = @Schema(implementation = RankingResponse.class))
             ),
-            @APIResponse(responseCode = "401", description = "Não autorizado"),
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado")
     })
     public Response getRankingByDefeats() {
@@ -149,7 +147,7 @@ public class RankingResource {
                     description = "Ranking retornado com sucesso",
                     content = @Content(schema = @Schema(implementation = RankingResponse.class))
             ),
-            @APIResponse(responseCode = "401", description = "Não autorizado"),
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado")
     })
     public Response getRankingByMinutesPlayed() {

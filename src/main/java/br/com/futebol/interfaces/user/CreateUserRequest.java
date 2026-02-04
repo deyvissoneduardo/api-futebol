@@ -6,9 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
-/**
- * DTO para criação de usuário.
- */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,15 +13,15 @@ import lombok.*;
 @Builder
 public class CreateUserRequest {
 
-    @NotBlank(message = "Nome completo é obrigatório")
+    @NotBlank(message = "Nome completo e obrigatorio")
     @Size(min = 3, max = 255, message = "Nome deve ter entre 3 e 255 caracteres")
     private String fullName;
 
-    @NotBlank(message = "E-mail é obrigatório")
-    @Email(message = "E-mail inválido")
+    @NotBlank(message = "E-mail e obrigatorio")
+    @Email(message = "E-mail invalido")
     private String email;
 
-    @NotBlank(message = "Senha é obrigatória")
+    @NotBlank(message = "Senha e obrigatorio")
     @Size(min = 6, max = 100, message = "Senha deve ter entre 6 e 100 caracteres")
     private String password;
 

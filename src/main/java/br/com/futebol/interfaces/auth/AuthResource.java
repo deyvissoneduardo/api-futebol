@@ -16,13 +16,10 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
-/**
- * Resource para operações de autenticação.
- */
 @Path("/api/auth")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Tag(name = "Autenticação", description = "Operações de autenticação")
+@Tag(name = "Autenticacao", description = "Operações de autenticacao")
 public class AuthResource {
 
     @Inject
@@ -34,8 +31,8 @@ public class AuthResource {
     @APIResponses({
             @APIResponse(responseCode = "200", description = "Login realizado com sucesso",
                     content = @Content(schema = @Schema(implementation = LoginResponse.class))),
-            @APIResponse(responseCode = "400", description = "Dados inválidos"),
-            @APIResponse(responseCode = "401", description = "Credenciais inválidas")
+            @APIResponse(responseCode = "400", description = "Dados invalidos"),
+            @APIResponse(responseCode = "401", description = "Credenciais invalidas")
     })
     public Response login(@Valid LoginRequest request) {
         LoginResponse response = authService.login(request);

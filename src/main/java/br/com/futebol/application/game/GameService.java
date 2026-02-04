@@ -31,9 +31,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Serviço para operações de jogos.
- */
 @ApplicationScoped
 public class GameService {
 
@@ -50,9 +47,6 @@ public class GameService {
     UserStatisticsService userStatisticsService;
 
     /**
-     * Lista o único jogo com released = true.
-     * Apenas um jogo pode estar com released = true por vez.
-     *
      * @return lista contendo apenas o jogo com released = true, ou lista vazia se não houver
      */
     public List<GameResponse> findAll() {
@@ -62,8 +56,6 @@ public class GameService {
     }
 
     /**
-     * Busca um jogo pelo ID.
-     *
      * @param id o ID do jogo
      * @return GameResponse com os dados do jogo
      * @throws ResourceNotFoundException se o jogo não for encontrado
@@ -75,47 +67,38 @@ public class GameService {
     }
 
     /**
-     * Cria um novo jogo.
-     * Se já existir um jogo com released = true, ele será automaticamente alterado para released = false,
-     * e o novo jogo será o único com released = true.
-     *
      * @param request os dados do novo jogo
-     * @param userId o ID do usuário que está criando o jogo
-     * @return CreateGameResponse com os dados do jogo criado e mensagem informativa se necessário
-     * @throws ForbiddenException se o usuário não tiver permissão (não for ADMIN ou SUPER_ADMIN)
+     * @param userId o ID do usuario que está criando o jogo
+     * @return CreateGameResponse com os dados do jogo criado e mensagem informativa se necessario
+     * @throws ForbiddenException se o usuario não tiver permissão (não for ADMIN ou SUPER_ADMIN)
      */
     @Transactional
     public CreateGameResponse create(CreateGameRequest request, UUID userId) {
         var user = userRepository.findByIdOptional(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", userId));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
 
         if (user.getProfile() != UserProfile.ADMIN && user.getProfile() != UserProfile.SUPER_ADMIN) {
             throw new ForbiddenException("Apenas ADMIN ou SUPER_ADMIN podem criar jogos");
         }
 
-        // Combinar startDate e startHour em OffsetDateTime
         OffsetDateTime gameDate = parseGameDateTime(request.getStartDate(), request.getStartHour());
 
-        // Verificar se já existe um jogo com released = true
         List<Game> releasedGames = gameRepository.findAllReleased();
         String message = null;
 
         if (!releasedGames.isEmpty()) {
-            // Alterar todos os games com released = true para false
             for (Game releasedGame : releasedGames) {
                 releasedGame.setReleased(false);
                 gameRepository.persist(releasedGame);
             }
-            // Criar mensagem informativa
             if (releasedGames.size() == 1) {
-                message = String.format("O gameId %s foi alterado para released = false. O novo game é o único com released = true.", 
+                message = String.format("O gameId %s foi alterado para released = false. O novo game e o unico com released = true.",
                         releasedGames.get(0).getId());
             } else {
-                message = String.format("Os gameIds foram alterados para released = false. O novo game é o único com released = true.");
+                message = String.format("Os gameIds foram alterados para released = false. O novo game é o unico com released = true.");
             }
         }
 
-        // Jogo criado com released = true por padrão, permitindo confirmações
         Game game = Game.builder()
                 .gameDate(gameDate)
                 .released(true)
@@ -134,9 +117,6 @@ public class GameService {
     }
 
     /**
-     * Combina a data e hora fornecidas em um OffsetDateTime.
-     * Interpreta a data/hora como UTC para salvar no banco.
-     *
      * @param startDate data no formato yyyy-MM-dd
      * @param startHour hora no formato HH:mm
      * @return OffsetDateTime combinando data e hora em UTC
@@ -146,9 +126,6 @@ public class GameService {
         try {
             LocalDate date = LocalDate.parse(startDate, DateTimeFormatter.ISO_LOCAL_DATE);
             LocalTime time = LocalTime.parse(startHour, DateTimeFormatter.ofPattern("HH:mm"));
-            
-            // Cria OffsetDateTime em UTC (Z = +00:00)
-            // A data/hora fornecida é interpretada como UTC
             return OffsetDateTime.of(date, time, ZoneOffset.UTC);
         } catch (DateTimeParseException e) {
             throw new BusinessException("Data ou hora inválida: " + e.getMessage());
@@ -156,18 +133,16 @@ public class GameService {
     }
 
     /**
-     * Inicia o jogo, bloqueando novas confirmações (muda released para false).
-     *
      * @param id o ID do jogo
-     * @param userId o ID do usuário que está iniciando o jogo
+     * @param userId o ID do usuario que esta iniciando o jogo
      * @return GameResponse com os dados do jogo atualizado
-     * @throws ResourceNotFoundException se o jogo não for encontrado
-     * @throws ForbiddenException se o usuário não tiver permissão (não for ADMIN ou SUPER_ADMIN)
+     * @throws ResourceNotFoundException se o jogo nao for encontrado
+     * @throws ForbiddenException se o usuario não tiver permissão (nao for ADMIN ou SUPER_ADMIN)
      */
     @Transactional
     public GameResponse releaseGame(UUID id, UUID userId) {
         var user = userRepository.findByIdOptional(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", userId));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
 
         if (user.getProfile() != UserProfile.ADMIN && user.getProfile() != UserProfile.SUPER_ADMIN) {
             throw new ForbiddenException("Apenas ADMIN ou SUPER_ADMIN podem iniciar jogos");
@@ -176,31 +151,27 @@ public class GameService {
         Game game = gameRepository.findByIdOptional(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Jogo", "id", id));
 
-        // Iniciar jogo: muda released para false, bloqueando novas confirmações
         game.setReleased(false);
         gameRepository.persist(game);
         return toResponse(game);
     }
 
     /**
-     * Atualiza estatísticas de todos os jogadores confirmados em um jogo.
-     * Apenas ADMIN ou SUPER_ADMIN podem executar esta operação.
-     *
      * @param gameId o ID do jogo
-     * @param request os dados de atualização de estatísticas
-     * @param userId o ID do usuário que está executando a operação
+     * @param request os dados de atualizacao de estatisticas
+     * @param userId o ID do usuario que esta executando a operacao
      * @return BulkUpdateStatisticsResponse com as estatísticas atualizadas
      * @throws ResourceNotFoundException se o jogo não for encontrado
-     * @throws ForbiddenException se o usuário não tiver permissão
-     * @throws BusinessException se algum userId não estiver confirmado no jogo
+     * @throws ForbiddenException se o usuario não tiver permissao
+     * @throws BusinessException se algum userId nao estiver confirmado no jogo
      */
     @Transactional
     public BulkUpdateStatisticsResponse bulkUpdateStatistics(UUID gameId, BulkUpdateStatisticsRequest request, UUID userId) {
         var user = userRepository.findByIdOptional(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", userId));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
 
         if (user.getProfile() != UserProfile.ADMIN && user.getProfile() != UserProfile.SUPER_ADMIN) {
-            throw new ForbiddenException("Apenas ADMIN ou SUPER_ADMIN podem atualizar estatísticas");
+            throw new ForbiddenException("Apenas ADMIN ou SUPER_ADMIN podem atualizar estatisticas");
         }
 
         Game game = gameRepository.findByIdOptional(gameId)
@@ -212,16 +183,14 @@ public class GameService {
                 .map(GameConfirmation::getUserId)
                 .collect(Collectors.toList());
 
-        // Validar que todos os userIds na requisição estão confirmados
         for (BulkUpdateStatisticsRequest.PlayerStatisticsUpdate update : request.getStatistics()) {
             if (!confirmedUserIds.contains(update.getUserId())) {
                 throw new BusinessException(
-                        String.format("Usuário %s não está confirmado nesta partida", update.getUserId())
+                        String.format("Usuario %s nao está confirmado nesta partida", update.getUserId())
                 );
             }
         }
 
-        // Atualizar estatísticas de cada jogador
         List<UserStatisticsResponse> updatedStatistics = request.getStatistics().stream()
                 .map(update -> {
                     UpdateStatisticsRequest statsRequest = UpdateStatisticsRequest.builder()
@@ -245,8 +214,6 @@ public class GameService {
     }
 
     /**
-     * Converte uma entidade Game para GameResponse.
-     *
      * @param game a entidade Game
      * @return GameResponse
      */

@@ -57,7 +57,6 @@ public class CorsConfig implements ContainerResponseFilter {
         headers.add("Access-Control-Expose-Headers", exposedHeaders);
         headers.add("Access-Control-Max-Age", maxAge);
 
-        // Com Allow-Origin: * não é possível usar credentials (especificação CORS)
         if (allowCredentials && !allowAll) {
             headers.add("Access-Control-Allow-Credentials", "true");
         }
@@ -69,7 +68,7 @@ public class CorsConfig implements ContainerResponseFilter {
 
     /**
      *
-     * @param origin A origem da requisição
+     * @param origin A origem da requisicao
      * @return true se a origem está permitida, false caso contrário
      */
     private boolean isOriginAllowed(String origin) {
@@ -77,7 +76,6 @@ public class CorsConfig implements ContainerResponseFilter {
             return false;
         }
 
-        // Se estiver configurado como "*", permite todas as origens
         if ("*".equals(allowedOrigins.trim())) {
             return true;
         }

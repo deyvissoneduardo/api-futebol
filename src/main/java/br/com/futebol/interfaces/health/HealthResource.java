@@ -13,18 +13,15 @@ import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Resource customizado para health check da API.
- * Complementa os endpoints padrão do Quarkus (/q/health/*).
- */
+
 @Path("/api/health")
 @Produces(MediaType.APPLICATION_JSON)
-@Tag(name = "Health", description = "Verificação de saúde da API")
+@Tag(name = "Health", description = "Verificacao de saude da API")
 public class HealthResource {
 
     @GET
     @Operation(summary = "Status da API", description = "Retorna o status atual da API")
-    @APIResponse(responseCode = "200", description = "API está funcionando")
+    @APIResponse(responseCode = "200", description = "API esta funcionando")
     public Response status() {
         Map<String, Object> response = new HashMap<>();
         response.put("status", "UP");

@@ -1,8 +1,5 @@
 package br.com.futebol.domain.user;
 
-/**
- * Enum representando os perfis de usuário no sistema.
- */
 public enum UserProfile {
     
     SUPER_ADMIN("Super Administrador"),

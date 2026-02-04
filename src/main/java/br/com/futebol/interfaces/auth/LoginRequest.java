@@ -4,9 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
-/**
- * DTO para requisição de login.
- */
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,11 +12,11 @@ import lombok.*;
 @Builder
 public class LoginRequest {
 
-    @NotBlank(message = "E-mail é obrigatório")
-    @Email(message = "E-mail inválido")
+    @NotBlank(message = "E-mail é obrigatorio")
+    @Email(message = "E-mail invalido")
     private String email;
 
-    @NotBlank(message = "Senha é obrigatória")
+    @NotBlank(message = "Senha e obrigatoria")
     private String password;
 }
 

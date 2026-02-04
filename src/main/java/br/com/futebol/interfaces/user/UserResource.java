@@ -23,13 +23,10 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Resource para operações de CRUD de usuários.
- */
 @Path("/api/users")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Tag(name = "Usuários", description = "Operações de gerenciamento de usuários")
+@Tag(name = "Usuários", description = "Operacoes de gerenciamento de usuarios")
 @SecurityScheme(
         securitySchemeName = "jwt",
         type = SecuritySchemeType.HTTP,
@@ -47,11 +44,11 @@ public class UserResource {
     @GET
     @RolesAllowed({"ADMIN", "SUPER_ADMIN"})
     @SecurityRequirement(name = "jwt")
-    @Operation(summary = "Listar usuários", description = "Retorna lista de todos os usuários ativos")
+    @Operation(summary = "Listar usuarios", description = "Retorna lista de todos os usuarios ativos")
     @APIResponses({
-            @APIResponse(responseCode = "200", description = "Lista de usuários",
+            @APIResponse(responseCode = "200", description = "Lista de usuarios",
                     content = @Content(schema = @Schema(implementation = UserResponse.class))),
-            @APIResponse(responseCode = "401", description = "Não autorizado"),
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado")
     })
     public Response findAll() {
@@ -63,13 +60,13 @@ public class UserResource {
     @Path("/{id}")
     @RolesAllowed({"ADMIN", "SUPER_ADMIN"})
     @SecurityRequirement(name = "jwt")
-    @Operation(summary = "Buscar usuário", description = "Retorna um usuário pelo ID")
+    @Operation(summary = "Buscar usuario", description = "Retorna um usuario pelo ID")
     @APIResponses({
-            @APIResponse(responseCode = "200", description = "Usuário encontrado",
+            @APIResponse(responseCode = "200", description = "Usuario encontrado",
                     content = @Content(schema = @Schema(implementation = UserResponse.class))),
-            @APIResponse(responseCode = "401", description = "Não autorizado"),
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado"),
-            @APIResponse(responseCode = "404", description = "Usuário não encontrado")
+            @APIResponse(responseCode = "404", description = "Usuario nao encontrado")
     })
     public Response findById(@PathParam("id") UUID id) {
         UserResponse user = userService.findById(id);
@@ -80,11 +77,11 @@ public class UserResource {
     @Path("/me")
     @RolesAllowed({"JOGADOR", "ADMIN", "SUPER_ADMIN"})
     @SecurityRequirement(name = "jwt")
-    @Operation(summary = "Perfil do usuário logado", description = "Retorna os dados do usuário autenticado")
+    @Operation(summary = "Perfil do usuario logado", description = "Retorna os dados do usuario autenticado")
     @APIResponses({
-            @APIResponse(responseCode = "200", description = "Dados do usuário",
+            @APIResponse(responseCode = "200", description = "Dados do usuario",
                     content = @Content(schema = @Schema(implementation = UserResponse.class))),
-            @APIResponse(responseCode = "401", description = "Não autorizado")
+            @APIResponse(responseCode = "401", description = "Nao autorizado")
     })
     public Response me(@Context SecurityContext securityContext) {
         String userId = jwt.getSubject();
@@ -92,20 +89,9 @@ public class UserResource {
         return Response.ok(user).build();
     }
 
-
-//    @RolesAllowed({"JOGADOR", "ADMIN", "SUPER_ADMIN"})
-//    @SecurityRequirement(name = "jwt")
-//    @APIResponses({
-//            @APIResponse(responseCode = "201", description = "Usuário criado",
-//                    content = @Content(schema = @Schema(implementation = UserResponse.class))),
-//            @APIResponse(responseCode = "400", description = "Dados inválidos"),
-//            @APIResponse(responseCode = "401", description = "Não autorizado"),
-//            @APIResponse(responseCode = "403", description = "Acesso negado")
-//    })
     @POST
-    @Operation(summary = "Criar usuário", description = "Cria um novo usuário")
+    @Operation(summary = "Criar usuario", description = "Cria um novo usuario")
     public Response create(@Valid CreateUserRequest request) {
-        System.out.println("CHEGOU AQUI");
         UserResponse user = userService.create(request);
         return Response.status(Response.Status.CREATED).entity(user).build();
     }
@@ -114,14 +100,14 @@ public class UserResource {
     @Path("/{id}")
     @RolesAllowed({"ADMIN", "SUPER_ADMIN"})
     @SecurityRequirement(name = "jwt")
-    @Operation(summary = "Atualizar usuário", description = "Atualiza os dados de um usuário")
+    @Operation(summary = "Atualizar usuario", description = "Atualiza os dados de um usuario")
     @APIResponses({
-            @APIResponse(responseCode = "200", description = "Usuário atualizado",
+            @APIResponse(responseCode = "200", description = "Usuario atualizado",
                     content = @Content(schema = @Schema(implementation = UserResponse.class))),
             @APIResponse(responseCode = "400", description = "Dados inválidos"),
-            @APIResponse(responseCode = "401", description = "Não autorizado"),
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado"),
-            @APIResponse(responseCode = "404", description = "Usuário não encontrado")
+            @APIResponse(responseCode = "404", description = "Usuario nao encontrado")
     })
     public Response update(@PathParam("id") UUID id, @Valid UpdateUserRequest request) {
         UserResponse user = userService.update(id, request);
@@ -132,12 +118,12 @@ public class UserResource {
     @Path("/{id}")
     @RolesAllowed({"SUPER_ADMIN"})
     @SecurityRequirement(name = "jwt")
-    @Operation(summary = "Deletar usuário", description = "Desativa um usuário (soft delete)")
+    @Operation(summary = "Deletar usuario", description = "Desativa um usuario (soft delete)")
     @APIResponses({
-            @APIResponse(responseCode = "204", description = "Usuário deletado"),
-            @APIResponse(responseCode = "401", description = "Não autorizado"),
+            @APIResponse(responseCode = "204", description = "Usuario deletado"),
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado"),
-            @APIResponse(responseCode = "404", description = "Usuário não encontrado")
+            @APIResponse(responseCode = "404", description = "Usuario nao encontrado")
     })
     public Response delete(@PathParam("id") UUID id) {
         userService.delete(id);

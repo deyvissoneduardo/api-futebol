@@ -11,9 +11,6 @@ import org.hibernate.type.SqlTypes;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-/**
- * Entidade User representando um usuário do sistema.
- */
 @Entity
 @Table(name = "users")
 @Getter

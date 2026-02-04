@@ -8,17 +8,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository para operações de persistência da entidade UserStatistics.
- */
+
 @ApplicationScoped
 public class UserStatisticsRepository implements PanacheRepositoryBase<UserStatistics, UUID> {
 
     /**
-     * Busca estatísticas de um usuário pelo ID do usuário.
-     *
-     * @param userId o ID do usuário
-     * @return Optional contendo as estatísticas se encontradas
+     * @param userId o ID do usuario
+     * @return Optional contendo as estatisticas se encontradas
      */
     public Optional<UserStatistics> findByUserId(UUID userId) {
 
@@ -26,9 +22,6 @@ public class UserStatisticsRepository implements PanacheRepositoryBase<UserStati
     }
 
     /**
-     * Busca ranking de gols ordenado do maior para o menor.
-     * Busca apenas estatísticas de usuários ADMIN e JOGADOR ativos.
-     *
      * @return Lista de estatísticas ordenadas por gols
      */
     public List<UserStatistics> findRankingByGoals() {
@@ -38,43 +31,35 @@ public class UserStatisticsRepository implements PanacheRepositoryBase<UserStati
     /**
      * Busca ranking de reclamações ordenado do maior para o menor.
      *
-     * @return Lista de estatísticas ordenadas por reclamações
+     * @return Lista de estatisticas ordenadas por reclamacoes
      */
     public List<UserStatistics> findRankingByComplaints() {
         return list("ORDER BY complaints DESC");
     }
 
     /**
-     * Busca ranking de vitórias ordenado do maior para o menor.
-     *
-     * @return Lista de estatísticas ordenadas por vitórias
+     * @return Lista de estatisticas ordenadas por vitorias
      */
     public List<UserStatistics> findRankingByVictories() {
         return list("ORDER BY victories DESC");
     }
 
     /**
-     * Busca ranking de empates ordenado do maior para o menor.
-     *
-     * @return Lista de estatísticas ordenadas por empates
+     * @return Lista de estatisticas ordenadas por empates
      */
     public List<UserStatistics> findRankingByDraws() {
         return list("ORDER BY draws DESC");
     }
 
     /**
-     * Busca ranking de derrotas ordenado do maior para o menor.
-     *
-     * @return Lista de estatísticas ordenadas por derrotas
+     * @return Lista de estatisticas ordenadas por derrotas
      */
     public List<UserStatistics> findRankingByDefeats() {
         return list("ORDER BY defeats DESC");
     }
 
     /**
-     * Busca ranking de minutos jogados ordenado do maior para o menor.
-     *
-     * @return Lista de estatísticas ordenadas por minutos jogados
+     * @return Lista de estatisticas ordenadas por minutos jogados
      */
     public List<UserStatistics> findRankingByMinutesPlayed() {
         return list("ORDER BY minutesPlayed DESC");

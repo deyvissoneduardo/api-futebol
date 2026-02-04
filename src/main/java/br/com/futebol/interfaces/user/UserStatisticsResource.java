@@ -22,13 +22,10 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.UUID;
 
-/**
- * Resource para operações de estatísticas de usuários.
- */
 @Path("/api/users")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Tag(name = "Estatísticas de Usuários", description = "Operações de gerenciamento de estatísticas de usuários")
+@Tag(name = "Estatísticas de usuarios", description = "Operacoes de gerenciamento de estatisticas de usuarios")
 @SecurityRequirement(name = "jwt")
 public class UserStatisticsResource {
 
@@ -42,19 +39,19 @@ public class UserStatisticsResource {
     @Path("/{userId}/statistics")
     @RolesAllowed({"JOGADOR", "ADMIN", "SUPER_ADMIN"})
     @Operation(
-            summary = "Buscar estatísticas de um usuário",
-            description = "Retorna as estatísticas de um usuário. Usuários só podem consultar suas próprias estatísticas."
+            summary = "Buscar estatisticas de um usuario",
+            description = "Retorna as estatisticas de um usuario. Usuarios só podem consultar suas próprias estatisticas."
     )
     @APIResponses({
             @APIResponse(
                     responseCode = "200",
-                    description = "Estatísticas encontradas",
+                    description = "Estatisticas encontradas",
                     content = @Content(schema = @Schema(implementation = UserStatisticsResponse.class))
             ),
             @APIResponse(responseCode = "401", description = "Não autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado"),
-            @APIResponse(responseCode = "404", description = "Usuário não encontrado"),
-            @APIResponse(responseCode = "400", description = "Usuário SUPER_ADMIN não possui estatísticas")
+            @APIResponse(responseCode = "404", description = "Usuario não encontrado"),
+            @APIResponse(responseCode = "400", description = "Usuario SUPER_ADMIN não possui estatisticas")
     })
     public Response getStatistics(@PathParam("userId") UUID userId, @Context SecurityContext securityContext) {
         String authenticatedUserId = jwt.getSubject();
@@ -62,7 +59,7 @@ public class UserStatisticsResource {
 
         // Validação: usuários só podem consultar suas próprias estatísticas
         if (!authenticatedUserUuid.equals(userId)) {
-            throw new UnauthorizedException("Você só pode consultar suas próprias estatísticas");
+            throw new UnauthorizedException("Você só pode consultar suas próprias estatisticas");
         }
 
         UserStatisticsResponse response = userStatisticsService.findByUserId(userId);
@@ -73,17 +70,17 @@ public class UserStatisticsResource {
     @Path("/me/statistics")
     @RolesAllowed({"JOGADOR", "ADMIN", "SUPER_ADMIN"})
     @Operation(
-            summary = "Buscar próprias estatísticas",
-            description = "Retorna as estatísticas do usuário autenticado"
+            summary = "Buscar proprias estatisticas",
+            description = "Retorna as estatisticas do usuario autenticado"
     )
     @APIResponses({
             @APIResponse(
                     responseCode = "200",
-                    description = "Estatísticas encontradas",
+                    description = "Estatisticas encontradas",
                     content = @Content(schema = @Schema(implementation = UserStatisticsResponse.class))
             ),
             @APIResponse(responseCode = "401", description = "Não autorizado"),
-            @APIResponse(responseCode = "400", description = "Usuário SUPER_ADMIN não possui estatísticas")
+            @APIResponse(responseCode = "400", description = "usuario SUPER_ADMIN não possui estatisticas")
     })
     public Response getMyStatistics(@Context SecurityContext securityContext) {
         String userId = jwt.getSubject();
@@ -97,19 +94,19 @@ public class UserStatisticsResource {
     @Path("/{userId}/statistics")
     @RolesAllowed({"ADMIN", "SUPER_ADMIN"})
     @Operation(
-            summary = "Atualizar todas as estatísticas de um usuário",
-            description = "Atualiza todas as estatísticas de um usuário de uma vez. Apenas ADMIN pode atualizar."
+            summary = "Atualizar todas as estatisticas de um usuario",
+            description = "Atualiza todas as estatisticas de um usuario de uma vez. Apenas ADMIN pode atualizar."
     )
     @APIResponses({
             @APIResponse(
                     responseCode = "200",
-                    description = "Estatísticas atualizadas",
+                    description = "Estatisticas atualizadas",
                     content = @Content(schema = @Schema(implementation = UserStatisticsResponse.class))
             ),
-            @APIResponse(responseCode = "400", description = "Dados inválidos"),
-            @APIResponse(responseCode = "401", description = "Não autorizado"),
+            @APIResponse(responseCode = "400", description = "Dados invalidos"),
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado - apenas ADMIN pode atualizar"),
-            @APIResponse(responseCode = "404", description = "Usuário não encontrado")
+            @APIResponse(responseCode = "404", description = "Usuario nao encontrado")
     })
     public Response updateStatistics(
             @PathParam("userId") UUID userId,
@@ -141,10 +138,10 @@ public class UserStatisticsResource {
                     description = "Minutos atualizados",
                     content = @Content(schema = @Schema(implementation = UserStatisticsResponse.class))
             ),
-            @APIResponse(responseCode = "400", description = "Dados inválidos"),
-            @APIResponse(responseCode = "401", description = "Não autorizado"),
+            @APIResponse(responseCode = "400", description = "Dados invalidos"),
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado - apenas ADMIN pode atualizar"),
-            @APIResponse(responseCode = "404", description = "Usuário não encontrado")
+            @APIResponse(responseCode = "404", description = "Usuario nao encontrado")
     })
     public Response updateMinutes(
             @PathParam("userId") UUID userId,
@@ -176,10 +173,10 @@ public class UserStatisticsResource {
                     description = "Gols atualizados",
                     content = @Content(schema = @Schema(implementation = UserStatisticsResponse.class))
             ),
-            @APIResponse(responseCode = "400", description = "Dados inválidos"),
-            @APIResponse(responseCode = "401", description = "Não autorizado"),
+            @APIResponse(responseCode = "400", description = "Dados invalidos"),
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado - apenas ADMIN pode atualizar"),
-            @APIResponse(responseCode = "404", description = "Usuário não encontrado")
+            @APIResponse(responseCode = "404", description = "Usuario não encontrado")
     })
     public Response updateGoals(
             @PathParam("userId") UUID userId,
@@ -202,19 +199,19 @@ public class UserStatisticsResource {
     @Path("/{userId}/statistics/complaints")
     @RolesAllowed({"ADMIN", "SUPER_ADMIN"})
     @Operation(
-            summary = "Atualizar reclamações",
-            description = "Adiciona ou subtrai reclamações. Valores positivos somam (ex: 1), valores negativos subtraem (ex: -1). Apenas ADMIN pode atualizar."
+            summary = "Atualizar reclamacoes",
+            description = "Adiciona ou subtrai reclamacoes. Valores positivos somam (ex: 1), valores negativos subtraem (ex: -1). Apenas ADMIN pode atualizar."
     )
     @APIResponses({
             @APIResponse(
                     responseCode = "200",
-                    description = "Reclamações atualizadas",
+                    description = "Reclamacoes atualizadas",
                     content = @Content(schema = @Schema(implementation = UserStatisticsResponse.class))
             ),
-            @APIResponse(responseCode = "400", description = "Dados inválidos"),
-            @APIResponse(responseCode = "401", description = "Não autorizado"),
+            @APIResponse(responseCode = "400", description = "Dados invalidos"),
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado - apenas ADMIN pode atualizar"),
-            @APIResponse(responseCode = "404", description = "Usuário não encontrado")
+            @APIResponse(responseCode = "404", description = "Usuario não encontrado")
     })
     public Response updateComplaints(
             @PathParam("userId") UUID userId,
@@ -238,18 +235,18 @@ public class UserStatisticsResource {
     @RolesAllowed({"ADMIN", "SUPER_ADMIN"})
     @Operation(
             summary = "Atualizar vitórias",
-            description = "Adiciona ou subtrai vitórias. Valores positivos somam (ex: 1), valores negativos subtraem (ex: -1). Apenas ADMIN pode atualizar."
+            description = "Adiciona ou subtrai vitorias. Valores positivos somam (ex: 1), valores negativos subtraem (ex: -1). Apenas ADMIN pode atualizar."
     )
     @APIResponses({
             @APIResponse(
                     responseCode = "200",
-                    description = "Vitórias atualizadas",
+                    description = "Vitorias atualizadas",
                     content = @Content(schema = @Schema(implementation = UserStatisticsResponse.class))
             ),
-            @APIResponse(responseCode = "400", description = "Dados inválidos"),
-            @APIResponse(responseCode = "401", description = "Não autorizado"),
+            @APIResponse(responseCode = "400", description = "Dados invalidos"),
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado - apenas ADMIN pode atualizar"),
-            @APIResponse(responseCode = "404", description = "Usuário não encontrado")
+            @APIResponse(responseCode = "404", description = "Usuario não encontrado")
     })
     public Response updateVictories(
             @PathParam("userId") UUID userId,
@@ -281,10 +278,10 @@ public class UserStatisticsResource {
                     description = "Empates atualizados",
                     content = @Content(schema = @Schema(implementation = UserStatisticsResponse.class))
             ),
-            @APIResponse(responseCode = "400", description = "Dados inválidos"),
-            @APIResponse(responseCode = "401", description = "Não autorizado"),
+            @APIResponse(responseCode = "400", description = "Dados invalidos"),
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado - apenas ADMIN pode atualizar"),
-            @APIResponse(responseCode = "404", description = "Usuário não encontrado")
+            @APIResponse(responseCode = "404", description = "Usuario não encontrado")
     })
     public Response updateDraws(
             @PathParam("userId") UUID userId,
@@ -316,10 +313,10 @@ public class UserStatisticsResource {
                     description = "Derrotas atualizadas",
                     content = @Content(schema = @Schema(implementation = UserStatisticsResponse.class))
             ),
-            @APIResponse(responseCode = "400", description = "Dados inválidos"),
-            @APIResponse(responseCode = "401", description = "Não autorizado"),
+            @APIResponse(responseCode = "400", description = "Dados invalidos"),
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado - apenas ADMIN pode atualizar"),
-            @APIResponse(responseCode = "404", description = "Usuário não encontrado")
+            @APIResponse(responseCode = "404", description = "Usuario não encontrado")
     })
     public Response updateDefeats(
             @PathParam("userId") UUID userId,

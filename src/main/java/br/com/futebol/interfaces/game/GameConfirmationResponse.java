@@ -6,9 +6,6 @@ import lombok.*;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-/**
- * DTO de resposta para confirmação de nome em jogo.
- */
 @Getter
 @Setter
 @NoArgsConstructor

@@ -9,9 +9,6 @@ import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Serviço para geração e validação de tokens JWT.
- */
 @ApplicationScoped
 public class JwtService {
 
@@ -22,8 +19,6 @@ public class JwtService {
     long tokenLifespan;
 
     /**
-     * Gera um token JWT para o usuário.
-     *
      * @param user o usuário autenticado
      * @return o token JWT gerado
      */

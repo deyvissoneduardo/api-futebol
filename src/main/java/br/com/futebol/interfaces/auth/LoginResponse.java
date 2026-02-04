@@ -5,9 +5,6 @@ import lombok.*;
 
 import java.util.UUID;
 
-/**
- * DTO de resposta para login.
- */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,9 +17,6 @@ public class LoginResponse {
     private Long expiresIn;
     private UserInfo user;
 
-    /**
-     * Informações básicas do usuário logado.
-     */
     @Getter
     @Setter
     @NoArgsConstructor
