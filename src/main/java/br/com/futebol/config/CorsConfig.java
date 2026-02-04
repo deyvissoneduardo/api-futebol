@@ -1,17 +1,21 @@
 package br.com.futebol.config;
 
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.container.ContainerResponseFilter;
 import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @Provider
 @ApplicationScoped
-public class CorsConfig implements ContainerResponseFilter {
+@Priority(1)
+public class CorsConfig implements ContainerRequestFilter, ContainerResponseFilter {
 
     @Inject
     @ConfigProperty(name = "cors.allowed-origins", defaultValue = "*")
@@ -36,6 +40,46 @@ public class CorsConfig implements ContainerResponseFilter {
     @Inject
     @ConfigProperty(name = "cors.max-age", defaultValue = "3600")
     int maxAge;
+
+    /**
+     * Intercepta requisições OPTIONS (preflight) e retorna resposta imediata com headers CORS.
+     * Isso garante que o preflight seja tratado antes que o sistema de segurança do Quarkus bloqueie.
+     */
+    @Override
+    public void filter(ContainerRequestContext requestContext) {
+        if ("OPTIONS".equalsIgnoreCase(requestContext.getMethod())) {
+            Response.ResponseBuilder responseBuilder = Response.ok();
+            
+            String origin = requestContext.getHeaderString("Origin");
+            boolean allowAll = "*".equals(allowedOrigins != null ? allowedOrigins.trim() : "");
+            
+            // Adiciona Access-Control-Allow-Origin
+            // Para preflight, sempre adiciona o header se houver origem na requisição
+            if (origin != null && !origin.isEmpty()) {
+                if (allowAll) {
+                    responseBuilder.header("Access-Control-Allow-Origin", "*");
+                } else if (isOriginAllowed(origin)) {
+                    responseBuilder.header("Access-Control-Allow-Origin", origin);
+                }
+            } else if (allowAll) {
+                // Se não há origem mas allowAll é true, permite qualquer origem
+                responseBuilder.header("Access-Control-Allow-Origin", "*");
+            }
+            
+            // Adiciona outros headers CORS necessários para preflight
+            responseBuilder.header("Access-Control-Allow-Methods", allowedMethods);
+            responseBuilder.header("Access-Control-Allow-Headers", allowedHeaders);
+            responseBuilder.header("Access-Control-Expose-Headers", exposedHeaders);
+            responseBuilder.header("Access-Control-Max-Age", maxAge);
+            
+            if (allowCredentials && !allowAll && origin != null && isOriginAllowed(origin)) {
+                responseBuilder.header("Access-Control-Allow-Credentials", "true");
+            }
+            
+            // Aborta a requisição retornando resposta imediata
+            requestContext.abortWith(responseBuilder.build());
+        }
+    }
 
     @Override
     public void filter(ContainerRequestContext requestContext,
