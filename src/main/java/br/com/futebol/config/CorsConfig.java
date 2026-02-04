@@ -41,10 +41,6 @@ public class CorsConfig implements ContainerRequestFilter, ContainerResponseFilt
     @ConfigProperty(name = "cors.max-age", defaultValue = "3600")
     int maxAge;
 
-    /**
-     * Intercepta requisições OPTIONS (preflight) e retorna resposta imediata com headers CORS.
-     * Isso garante que o preflight seja tratado antes que o sistema de segurança do Quarkus bloqueie.
-     */
     @Override
     public void filter(ContainerRequestContext requestContext) {
         if ("OPTIONS".equalsIgnoreCase(requestContext.getMethod())) {
@@ -52,9 +48,6 @@ public class CorsConfig implements ContainerRequestFilter, ContainerResponseFilt
             
             String origin = requestContext.getHeaderString("Origin");
             boolean allowAll = "*".equals(allowedOrigins != null ? allowedOrigins.trim() : "");
-            
-            // Adiciona Access-Control-Allow-Origin
-            // Para preflight, sempre adiciona o header se houver origem na requisição
             if (origin != null && !origin.isEmpty()) {
                 if (allowAll) {
                     responseBuilder.header("Access-Control-Allow-Origin", "*");
@@ -62,7 +55,6 @@ public class CorsConfig implements ContainerRequestFilter, ContainerResponseFilt
                     responseBuilder.header("Access-Control-Allow-Origin", origin);
                 }
             } else if (allowAll) {
-                // Se não há origem mas allowAll é true, permite qualquer origem
                 responseBuilder.header("Access-Control-Allow-Origin", "*");
             }
             
@@ -76,7 +68,6 @@ public class CorsConfig implements ContainerRequestFilter, ContainerResponseFilt
                 responseBuilder.header("Access-Control-Allow-Credentials", "true");
             }
             
-            // Aborta a requisição retornando resposta imediata
             requestContext.abortWith(responseBuilder.build());
         }
     }
