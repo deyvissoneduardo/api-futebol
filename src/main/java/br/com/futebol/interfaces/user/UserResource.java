@@ -27,12 +27,12 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Usuários", description = "Operacoes de gerenciamento de usuarios")
-@SecurityScheme(
-        securitySchemeName = "jwt",
-        type = SecuritySchemeType.HTTP,
-        scheme = "bearer",
-        bearerFormat = "JWT"
-)
+//@SecurityScheme(
+//        securitySchemeName = "jwt",
+//        type = SecuritySchemeType.HTTP,
+//        scheme = "bearer",
+//        bearerFormat = "JWT"
+//)
 public class UserResource {
 
     @Inject
