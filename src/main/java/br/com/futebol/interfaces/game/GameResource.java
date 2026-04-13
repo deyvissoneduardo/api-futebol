@@ -88,6 +88,25 @@ public class GameResource {
     }
 
     @PUT
+    @Path("/{id}")
+    @RolesAllowed({"ADMIN", "SUPER_ADMIN"})
+    @SecurityRequirement(name = "jwt")
+    @Operation(summary = "Editar jogo", description = "Edita nome, data e hora de um jogo (apenas ADMIN/SUPER_ADMIN)")
+    @APIResponses({
+            @APIResponse(responseCode = "200", description = "Jogo atualizado com sucesso",
+                    content = @Content(schema = @Schema(implementation = GameResponse.class))),
+            @APIResponse(responseCode = "400", description = "Dados inválidos"),
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
+            @APIResponse(responseCode = "403", description = "Acesso negado"),
+            @APIResponse(responseCode = "404", description = "Jogo nao encontrado")
+    })
+    public Response update(@PathParam("id") UUID id, @Valid UpdateGameRequest request) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        GameResponse game = gameService.update(id, request, userId);
+        return Response.ok(game).build();
+    }
+
+    @PUT
     @Path("/{id}/release")
     @RolesAllowed({"ADMIN", "SUPER_ADMIN"})
     @SecurityRequirement(name = "jwt")

@@ -39,24 +39,23 @@ public class UserStatisticsService {
      * @throws ResourceNotFoundException se o usuario não for encontrado
      * @throws BusinessException se o usuario for SUPER_ADMIN
      */
-    public UserStatisticsResponse findByUserId(UUID userId) {
+    public Optional<UserStatisticsResponse> findByUserId(UUID userId) {
         User user = userRepository.findActiveById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
 
         if (user.getProfile() == UserProfile.SUPER_ADMIN) {
             throw new BusinessException("Usuarios SUPER_ADMIN nao possuem estatisticas");
         }
-        UserStatistics statistics = userStatisticsRepository.findByUserId(userId)
-                .orElseGet(() -> createDefaultStatistics(user));
 
-        return toResponse(statistics);
+        return userStatisticsRepository.findByUserId(userId)
+                .map(this::toResponse);
     }
 
     /**
      * @param userId o ID do usuario autenticado
      * @return UserStatisticsResponse com os dados das estatisticas
      */
-    public UserStatisticsResponse findCurrentUserStatistics(UUID userId) {
+    public Optional<UserStatisticsResponse> findCurrentUserStatistics(UUID userId) {
         return findByUserId(userId);
     }
 

@@ -25,6 +25,9 @@ public class Game extends PanacheEntityBase {
     @Column(name = "game_date", nullable = false)
     private OffsetDateTime gameDate;
 
+    @Column(nullable = false, length = 120)
+    private String name;
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean released = false;
@@ -42,6 +45,7 @@ public class Game extends PanacheEntityBase {
         return "Game{" +
                 "id=" + id +
                 ", gameDate=" + gameDate +
+                ", name='" + name + '\'' +
                 ", released=" + released +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +

@@ -48,6 +48,7 @@ public class UserStatisticsResource {
                     description = "Estatisticas encontradas",
                     content = @Content(schema = @Schema(implementation = UserStatisticsResponse.class))
             ),
+            @APIResponse(responseCode = "204", description = "Usuario sem estatisticas cadastradas"),
             @APIResponse(responseCode = "401", description = "Não autorizado"),
             @APIResponse(responseCode = "403", description = "Acesso negado"),
             @APIResponse(responseCode = "404", description = "Usuario não encontrado"),
@@ -62,8 +63,9 @@ public class UserStatisticsResource {
             throw new UnauthorizedException("Você só pode consultar suas próprias estatisticas");
         }
 
-        UserStatisticsResponse response = userStatisticsService.findByUserId(userId);
-        return Response.ok(response).build();
+        return userStatisticsService.findByUserId(userId)
+                .map(response -> Response.ok(response).build())
+                .orElseGet(() -> Response.noContent().build());
     }
 
     @GET
@@ -79,6 +81,7 @@ public class UserStatisticsResource {
                     description = "Estatisticas encontradas",
                     content = @Content(schema = @Schema(implementation = UserStatisticsResponse.class))
             ),
+            @APIResponse(responseCode = "204", description = "Usuario sem estatisticas cadastradas"),
             @APIResponse(responseCode = "401", description = "Não autorizado"),
             @APIResponse(responseCode = "400", description = "usuario SUPER_ADMIN não possui estatisticas")
     })
@@ -86,8 +89,9 @@ public class UserStatisticsResource {
         String userId = jwt.getSubject();
         UUID userUuid = UUID.fromString(userId);
 
-        UserStatisticsResponse response = userStatisticsService.findCurrentUserStatistics(userUuid);
-        return Response.ok(response).build();
+        return userStatisticsService.findCurrentUserStatistics(userUuid)
+                .map(response -> Response.ok(response).build())
+                .orElseGet(() -> Response.noContent().build());
     }
 
     @PUT

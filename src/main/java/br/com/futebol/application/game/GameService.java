@@ -15,6 +15,7 @@ import br.com.futebol.interfaces.game.BulkUpdateStatisticsResponse;
 import br.com.futebol.interfaces.game.CreateGameRequest;
 import br.com.futebol.interfaces.game.CreateGameResponse;
 import br.com.futebol.interfaces.game.GameResponse;
+import br.com.futebol.interfaces.game.UpdateGameRequest;
 import br.com.futebol.interfaces.user.UpdateStatisticsRequest;
 import br.com.futebol.interfaces.user.UserStatisticsResponse;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -101,6 +102,7 @@ public class GameService {
 
         Game game = Game.builder()
                 .gameDate(gameDate)
+                .name(normalizeName(request.getName()))
                 .released(true)
                 .build();
 
@@ -108,6 +110,7 @@ public class GameService {
 
         return CreateGameResponse.builder()
                 .id(game.getId())
+                .name(game.getName())
                 .gameDate(game.getGameDate())
                 .released(game.getReleased())
                 .createdAt(game.getCreatedAt())
@@ -130,6 +133,41 @@ public class GameService {
         } catch (DateTimeParseException e) {
             throw new BusinessException("Data ou hora inválida: " + e.getMessage());
         }
+    }
+
+    private String normalizeName(String name) {
+        String normalizedName = name == null ? null : name.trim();
+
+        if (normalizedName == null || normalizedName.isBlank()) {
+            throw new BusinessException("Nome do jogo é obrigatorio");
+        }
+
+        return normalizedName;
+    }
+
+    /**
+     * @param id o ID do jogo
+     * @param request os dados atualizados do jogo
+     * @param userId o ID do usuario que esta editando o jogo
+     * @return GameResponse com os dados atualizados
+     */
+    @Transactional
+    public GameResponse update(UUID id, UpdateGameRequest request, UUID userId) {
+        var user = userRepository.findByIdOptional(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
+
+        if (user.getProfile() != UserProfile.ADMIN && user.getProfile() != UserProfile.SUPER_ADMIN) {
+            throw new ForbiddenException("Apenas ADMIN ou SUPER_ADMIN podem editar jogos");
+        }
+
+        Game game = gameRepository.findByIdOptional(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Jogo", "id", id));
+
+        game.setName(normalizeName(request.getName()));
+        game.setGameDate(parseGameDateTime(request.getStartDate(), request.getStartHour()));
+
+        gameRepository.persist(game);
+        return toResponse(game);
     }
 
     /**
@@ -220,6 +258,7 @@ public class GameService {
     private GameResponse toResponse(Game game) {
         return GameResponse.builder()
                 .id(game.getId())
+                .name(game.getName())
                 .gameDate(game.getGameDate())
                 .released(game.getReleased())
                 .createdAt(game.getCreatedAt())
