@@ -1,16 +1,21 @@
 package br.com.futebol.application.game;
 
 import br.com.futebol.core.exceptions.ConflictException;
+import br.com.futebol.core.exceptions.BusinessException;
 import br.com.futebol.core.exceptions.ForbiddenException;
 import br.com.futebol.core.exceptions.ResourceNotFoundException;
 import br.com.futebol.domain.game.Game;
 import br.com.futebol.domain.game.GameConfirmation;
+import br.com.futebol.domain.user.User;
 import br.com.futebol.domain.user.UserProfile;
 import br.com.futebol.infrastructure.game.GameConfirmationRepository;
 import br.com.futebol.infrastructure.game.GameRepository;
 import br.com.futebol.infrastructure.user.UserRepository;
+import br.com.futebol.application.user.UserService;
+import br.com.futebol.interfaces.game.AddConfirmedPlayerRequest;
 import br.com.futebol.interfaces.game.ConfirmNameRequest;
 import br.com.futebol.interfaces.game.GameConfirmationListResponse;
+import br.com.futebol.interfaces.game.GamePlayerSearchResponse;
 import br.com.futebol.interfaces.game.GameConfirmationResponse;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -32,6 +37,9 @@ public class GameConfirmationService {
 
     @Inject
     UserRepository userRepository;
+
+    @Inject
+    UserService userService;
 
     /**
      * Quando isGuest = true, o sistema cria um UUID único para o convidado,
@@ -125,6 +133,81 @@ public class GameConfirmationService {
         return confirmations.stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * @param gameId o ID do jogo
+     * @param name nome a buscar
+     * @param requesterUserId usuario autenticado
+     * @return lista de jogadores ativos ainda nao confirmados no jogo
+     */
+    public List<GamePlayerSearchResponse> searchAvailablePlayers(UUID gameId, String name, UUID requesterUserId) {
+        validateAdminPermission(requesterUserId);
+
+        gameRepository.findByIdOptional(gameId)
+                .orElseThrow(() -> new ResourceNotFoundException("Jogo", "id", gameId));
+
+        List<UUID> confirmedUserIds = gameConfirmationRepository.findEligibleWorstPlayerByGameId(gameId).stream()
+                .map(GameConfirmation::getUserId)
+                .toList();
+
+        return userService.searchActivePlayersByName(name).stream()
+                .filter(player -> !confirmedUserIds.contains(player.getUserId()))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * @param gameId o ID do jogo
+     * @param request dados do jogador a adicionar
+     * @param requesterUserId usuario autenticado
+     * @return confirmacao criada
+     */
+    @Transactional
+    public GameConfirmationResponse addExistingPlayerConfirmation(UUID gameId, AddConfirmedPlayerRequest request, UUID requesterUserId) {
+        validateAdminPermission(requesterUserId);
+
+        Game game = gameRepository.findByIdOptional(gameId)
+                .orElseThrow(() -> new ResourceNotFoundException("Jogo", "id", gameId));
+
+        if (!game.getReleased()) {
+            throw new ForbiddenException("Lista nao está liberada");
+        }
+
+        User targetUser = userRepository.findActiveById(request.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", request.getUserId()));
+
+        if (targetUser.getProfile() != UserProfile.JOGADOR) {
+            throw new BusinessException("Apenas usuarios com perfil JOGADOR podem ser adicionados ao jogo");
+        }
+
+        if (gameConfirmationRepository.existsByGameIdAndUserId(gameId, targetUser.getId())) {
+            throw new ConflictException("Usuario ja confirmado para este jogo");
+        }
+
+        if (gameConfirmationRepository.existsByGameIdAndConfirmedName(gameId, targetUser.getFullName())) {
+            throw new ConflictException("Nome ja confirmado para este jogo. Escolha outro nome.");
+        }
+
+        GameConfirmation confirmation = GameConfirmation.builder()
+                .gameId(gameId)
+                .userId(targetUser.getId())
+                .confirmedName(targetUser.getFullName())
+                .isGuest(false)
+                .confirmedByUserId(requesterUserId)
+                .confirmedAt(OffsetDateTime.now())
+                .build();
+
+        gameConfirmationRepository.persist(confirmation);
+        return toResponse(confirmation);
+    }
+
+    private void validateAdminPermission(UUID userId) {
+        User user = userRepository.findActiveById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", userId));
+
+        if (user.getProfile() != UserProfile.ADMIN && user.getProfile() != UserProfile.SUPER_ADMIN) {
+            throw new ForbiddenException("Apenas ADMIN ou SUPER_ADMIN podem executar esta operacao");
+        }
     }
 
     /**

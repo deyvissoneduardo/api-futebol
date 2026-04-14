@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../fut"
+		},
+		{
+			"path": "../confirm-name-today"
+		}
+	],
+	"settings": {}
+}

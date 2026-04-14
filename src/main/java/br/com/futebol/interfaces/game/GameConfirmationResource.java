@@ -1,6 +1,7 @@
 package br.com.futebol.interfaces.game;
 
 import br.com.futebol.application.game.GameConfirmationService;
+import br.com.futebol.interfaces.game.AddConfirmedPlayerRequest;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -88,6 +89,43 @@ public class GameConfirmationResource {
         UUID userId = UUID.fromString(jwt.getSubject());
         java.util.List<GameConfirmationResponse> confirmations = gameConfirmationService.findMyConfirmations(gameId, userId);
         return Response.ok(confirmations).build();
+    }
+
+    @GET
+    @Path("/players/search")
+    @RolesAllowed({"ADMIN", "SUPER_ADMIN"})
+    @SecurityRequirement(name = "jwt")
+    @Operation(summary = "Buscar jogadores por nome", description = "Busca jogadores ativos por nome para adiciona-los manualmente na lista de confirmacoes do jogo")
+    @APIResponses({
+            @APIResponse(responseCode = "200", description = "Jogadores encontrados",
+                    content = @Content(schema = @Schema(implementation = GamePlayerSearchResponse.class))),
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
+            @APIResponse(responseCode = "403", description = "Acesso negado"),
+            @APIResponse(responseCode = "404", description = "Jogo nao encontrado")
+    })
+    public Response searchPlayers(@PathParam("gameId") UUID gameId, @QueryParam("name") String name) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return Response.ok(gameConfirmationService.searchAvailablePlayers(gameId, name, userId)).build();
+    }
+
+    @POST
+    @Path("/players")
+    @RolesAllowed({"ADMIN", "SUPER_ADMIN"})
+    @SecurityRequirement(name = "jwt")
+    @Operation(summary = "Adicionar jogador existente a confirmacao", description = "Adiciona um usuario já cadastrado e ativo na lista de confirmacoes do jogo")
+    @APIResponses({
+            @APIResponse(responseCode = "201", description = "Jogador confirmado com sucesso",
+                    content = @Content(schema = @Schema(implementation = GameConfirmationResponse.class))),
+            @APIResponse(responseCode = "400", description = "Dados invalidos"),
+            @APIResponse(responseCode = "401", description = "Nao autorizado"),
+            @APIResponse(responseCode = "403", description = "Acesso negado"),
+            @APIResponse(responseCode = "404", description = "Jogo ou usuario nao encontrado"),
+            @APIResponse(responseCode = "409", description = "Jogador ja confirmado")
+    })
+    public Response addExistingPlayer(@PathParam("gameId") UUID gameId, @Valid AddConfirmedPlayerRequest request) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        GameConfirmationResponse confirmation = gameConfirmationService.addExistingPlayerConfirmation(gameId, request, userId);
+        return Response.status(Response.Status.CREATED).entity(confirmation).build();
     }
 }
 

@@ -1231,9 +1231,450 @@
 						"description": "Retorna a confirmação do usuário autenticado para o jogo especificado.\n\n**Permissões:** JOGADOR, ADMIN, SUPER_ADMIN\n\n**Parâmetros:**\n- gameId (path): UUID do jogo\n\n**Resposta:**\n- 200: GameConfirmationResponse com os dados da confirmação do usuário logado\n\n**Estrutura de GameConfirmationResponse:**\n- id: UUID da confirmação\n- gameId: UUID do jogo\n- userId: UUID do usuário\n- confirmedName: Nome confirmado\n- confirmedAt: Data e hora da confirmação\n- createdAt: Data de criação\n- updatedAt: Data de atualização\n\n**Erros:**\n- 401: Não autorizado\n- 404: Confirmação não encontrada"
 					},
 					"response": []
+				},
+				{
+					"name": "Buscar Jogadores por Nome para Confirmação",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/games/:gameId/confirmations/players/search?name=jo",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"games",
+								":gameId",
+								"confirmations",
+								"players",
+								"search"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "jo",
+									"description": "Trecho do nome do jogador"
+								}
+							],
+							"variable": [
+								{
+									"key": "gameId",
+									"value": "",
+									"description": "UUID do jogo"
+								}
+							]
+						},
+						"description": "Busca jogadores ativos por nome para adição manual na lista de confirmações do jogo.\n\n**Permissões:** ADMIN, SUPER_ADMIN\n\n**Parâmetros:**\n- gameId (path): UUID do jogo\n- name (query): trecho do nome do jogador\n\n**Regras de Negócio:**\n- Retorna apenas usuários ativos com perfil JOGADOR\n- Não retorna jogadores já confirmados no jogo\n\n**Resposta:**\n- 200: Array contendo `userId` e `fullName`\n\n**Erros:**\n- 401: Não autorizado\n- 403: Acesso negado\n- 404: Jogo não encontrado"
+					},
+					"response": []
+				},
+				{
+					"name": "Adicionar Jogador Existente à Confirmação",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userId\": \"{{user_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/games/:gameId/confirmations/players",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"games",
+								":gameId",
+								"confirmations",
+								"players"
+							],
+							"variable": [
+								{
+									"key": "gameId",
+									"value": "",
+									"description": "UUID do jogo"
+								}
+							]
+						},
+						"description": "Adiciona manualmente um usuário já cadastrado e ativo à lista de confirmações do jogo.\n\n**Permissões:** ADMIN, SUPER_ADMIN\n\n**Parâmetros:**\n- gameId (path): UUID do jogo\n\n**Body:**\n- userId: UUID do jogador cadastrado\n\n**Regras de Negócio:**\n- O jogo deve estar com lista aberta para confirmação\n- O usuário deve existir, estar ativo e ter perfil JOGADOR\n- O jogador não pode já estar confirmado no jogo\n- O nome do jogador não pode conflitar com outro nome já confirmado\n\n**Resposta:**\n- 201: GameConfirmationResponse\n\n**Erros:**\n- 400: Dados inválidos\n- 401: Não autorizado\n- 403: Acesso negado\n- 404: Jogo ou usuário não encontrado\n- 409: Jogador já confirmado ou nome duplicado"
+					},
+					"response": []
 				}
 			],
 			"description": "Operações de confirmação de nomes em jogos"
+		},
+		{
+			"name": "Votação Pior do Jogo",
+			"item": [
+				{
+					"name": "Abrir Votação",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/games/:gameId/worst-player-voting/open",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"games",
+								":gameId",
+								"worst-player-voting",
+								"open"
+							],
+							"variable": [
+								{
+									"key": "gameId",
+									"value": "",
+									"description": "UUID do jogo"
+								}
+							]
+						},
+						"description": "Abre a votação de pior do jogo.\n\n**Permissões:** ADMIN, SUPER_ADMIN\n\n**Regras de Negócio:**\n- Só abre se houver jogadores elegíveis confirmados no jogo\n- Não reutiliza convidados\n- Não permite reabrir votação já encerrada\n\n**Resposta:**\n- 200: Status da votação com `gameId`, `votingEnabled`, `openedAt` e `closedAt`\n\n**Erros:**\n- 401: Não autorizado\n- 403: Acesso negado\n- 404: Jogo não encontrado\n- 409: Votação já aberta ou já encerrada"
+					},
+					"response": []
+				},
+				{
+					"name": "Consultar Status da Votação",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/games/:gameId/worst-player-voting/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"games",
+								":gameId",
+								"worst-player-voting",
+								"status"
+							],
+							"variable": [
+								{
+									"key": "gameId",
+									"value": "",
+									"description": "UUID do jogo"
+								}
+							]
+						},
+						"description": "Consulta o estado atual da votação de pior do jogo.\n\n**Permissões:** ADMIN, JOGADOR\n\n**Resposta:**\n- 200: Status da votação com `gameId`, `votingEnabled`, `openedAt` e `closedAt`"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Candidatos Elegíveis",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/games/:gameId/worst-player-voting/candidates",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"games",
+								":gameId",
+								"worst-player-voting",
+								"candidates"
+							],
+							"variable": [
+								{
+									"key": "gameId",
+									"value": "",
+									"description": "UUID do jogo"
+								}
+							]
+						},
+						"description": "Lista os jogadores confirmados e elegíveis para receber voto de pior do jogo.\n\n**Permissões:** ADMIN, JOGADOR\n\n**Regras de Negócio:**\n- Retorna apenas confirmações com `isGuest = false`\n\n**Resposta:**\n- 200: Array contendo `confirmationId`, `userId` e `confirmedName`"
+					},
+					"response": []
+				},
+				{
+					"name": "Votar no Pior do Jogo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"targetConfirmationId\": \"\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/games/:gameId/worst-player-voting/votes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"games",
+								":gameId",
+								"worst-player-voting",
+								"votes"
+							],
+							"variable": [
+								{
+									"key": "gameId",
+									"value": "",
+									"description": "UUID do jogo"
+								}
+							]
+						},
+						"description": "Registra um voto de pior do jogo.\n\n**Permissões:** ADMIN, JOGADOR\n\n**Body:**\n- targetConfirmationId: UUID da confirmação alvo no jogo\n\n**Regras de Negócio:**\n- Cada usuário pode votar apenas uma vez por jogo\n- O voto não pode ser alterado depois\n- Auto-voto é permitido\n- O alvo deve ser um jogador confirmado do jogo e não pode ser convidado\n\n**Resposta:**\n- 201: Dados do voto criado com `voteId`, `gameId`, `voterUserId`, `targetConfirmationId` e `createdAt`\n\n**Erros:**\n- 400: Dados inválidos ou alvo inválido\n- 401: Não autorizado\n- 403: Votação não aberta\n- 404: Jogo ou confirmação não encontrados\n- 409: Usuário já votou"
+					},
+					"response": []
+				},
+				{
+					"name": "Encerrar Votação",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/games/:gameId/worst-player-voting/close",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"games",
+								":gameId",
+								"worst-player-voting",
+								"close"
+							],
+							"variable": [
+								{
+									"key": "gameId",
+									"value": "",
+									"description": "UUID do jogo"
+								}
+							]
+						},
+						"description": "Encerra a votação de pior do jogo e bloqueia novos votos.\n\n**Permissões:** ADMIN, SUPER_ADMIN\n\n**Resposta:**\n- 200: Status da votação com `votingEnabled = false`\n\n**Erros:**\n- 401: Não autorizado\n- 403: Acesso negado\n- 404: Jogo não encontrado\n- 409: Votação não aberta"
+					},
+					"response": []
+				},
+				{
+					"name": "Ranking do Pior do Jogo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/games/:gameId/worst-player-voting/ranking",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"games",
+								":gameId",
+								"worst-player-voting",
+								"ranking"
+							],
+							"variable": [
+								{
+									"key": "gameId",
+									"value": "",
+									"description": "UUID do jogo"
+								}
+							]
+						},
+						"description": "Retorna o ranking de votos do pior do jogo para uma partida específica.\n\n**Permissões:** ADMIN, JOGADOR\n\n**Resposta:**\n- 200: `WorstPlayerRankingResponse` com `gameId`, `description`, `items` e `total`\n\n**Estrutura de item:**\n- position\n- gameId\n- confirmationId\n- userId\n- playerName\n- votes"
+					},
+					"response": []
+				},
+				{
+					"name": "Ranking Histórico do Pior do Jogo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/games/:gameId/worst-player-voting/history?startDate=2026-01-01&endDate=2026-12-31",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"games",
+								":gameId",
+								"worst-player-voting",
+								"history"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2026-01-01",
+									"description": "Data inicial no formato yyyy-MM-dd"
+								},
+								{
+									"key": "endDate",
+									"value": "2026-12-31",
+									"description": "Data final no formato yyyy-MM-dd"
+								}
+							],
+							"variable": [
+								{
+									"key": "gameId",
+									"value": "",
+									"description": "UUID do jogo usado pela rota"
+								}
+							]
+						},
+						"description": "Retorna o ranking histórico de pior do jogo por intervalo de datas do jogo.\n\n**Permissões:** ADMIN, JOGADOR\n\n**Parâmetros:**\n- startDate: data inicial no formato `yyyy-MM-dd`\n- endDate: data final no formato `yyyy-MM-dd`\n\n**Resposta:**\n- 200: `WorstPlayerHistoricalRankingResponse` com `startDate`, `endDate`, `description`, `items` e `total`\n\n**Observação:** a consulta considera a data do jogo, não a data em que o voto foi emitido."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Nomes de Quem Votou em um Jogador",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/games/:gameId/worst-player-voting/players/:confirmationId/voters",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"games",
+								":gameId",
+								"worst-player-voting",
+								"players",
+								":confirmationId",
+								"voters"
+							],
+							"variable": [
+								{
+									"key": "gameId",
+									"value": "",
+									"description": "UUID do jogo"
+								},
+								{
+									"key": "confirmationId",
+									"value": "",
+									"description": "UUID da confirmação alvo no jogo"
+								}
+							]
+						},
+						"description": "Lista apenas os nomes de quem votou em um jogador específico no jogo.\n\n**Permissões:** ADMIN, JOGADOR\n\n**Resposta:**\n- 200: `WorstPlayerVotersResponse` com `gameId`, `confirmationId`, `playerName`, `voterNames` e `total`\n\n**Regras de Negócio:**\n- O alvo precisa ser um jogador confirmado do jogo\n- Convidados não entram nessa consulta"
+					},
+					"response": []
+				}
+			],
+			"description": "Operações de abertura, voto, ranking e histórico da votação de pior do jogo"
 		}
 	],
 	"variable": [

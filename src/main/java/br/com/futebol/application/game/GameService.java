@@ -261,6 +261,9 @@ public class GameService {
                 .name(game.getName())
                 .gameDate(game.getGameDate())
                 .released(game.getReleased())
+                .worstPlayerVotingEnabled(game.getWorstPlayerVotingEnabled())
+                .worstPlayerVotingOpenedAt(game.getWorstPlayerVotingOpenedAt())
+                .worstPlayerVotingClosedAt(game.getWorstPlayerVotingClosedAt())
                 .createdAt(game.getCreatedAt())
                 .updatedAt(game.getUpdatedAt())
                 .build();

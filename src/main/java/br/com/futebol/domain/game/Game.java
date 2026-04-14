@@ -32,6 +32,16 @@ public class Game extends PanacheEntityBase {
     @Builder.Default
     private Boolean released = false;
 
+    @Column(name = "worst_player_voting_enabled", nullable = false)
+    @Builder.Default
+    private Boolean worstPlayerVotingEnabled = false;
+
+    @Column(name = "worst_player_voting_opened_at")
+    private OffsetDateTime worstPlayerVotingOpenedAt;
+
+    @Column(name = "worst_player_voting_closed_at")
+    private OffsetDateTime worstPlayerVotingClosedAt;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
@@ -47,6 +57,9 @@ public class Game extends PanacheEntityBase {
                 ", gameDate=" + gameDate +
                 ", name='" + name + '\'' +
                 ", released=" + released +
+                ", worstPlayerVotingEnabled=" + worstPlayerVotingEnabled +
+                ", worstPlayerVotingOpenedAt=" + worstPlayerVotingOpenedAt +
+                ", worstPlayerVotingClosedAt=" + worstPlayerVotingClosedAt +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';

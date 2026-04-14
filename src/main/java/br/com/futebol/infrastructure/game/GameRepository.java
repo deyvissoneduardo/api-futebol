@@ -5,6 +5,7 @@ import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.List;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,6 +39,15 @@ public class GameRepository implements PanacheRepositoryBase<Game, UUID> {
      */
     public Optional<Game> findReleased() {
         return find("released = ?1", true).firstResultOptional();
+    }
+
+    /**
+     * @param start data inicial inclusiva
+     * @param end data final inclusiva
+     * @return jogos no intervalo informado
+     */
+    public List<Game> findByGameDateBetween(OffsetDateTime start, OffsetDateTime end) {
+        return list("gameDate >= ?1 and gameDate <= ?2 order by gameDate desc", start, end);
     }
 }
 

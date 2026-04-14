@@ -44,6 +44,16 @@ public class UserRepository implements PanacheRepositoryBase<User, UUID> {
     }
 
     /**
+     * @param name termo para busca por trecho no nome
+     * @return lista de usuarios ativos com perfil JOGADOR
+     */
+    public List<User> findActivePlayersByName(String name) {
+        String normalized = "%" + name.trim().toLowerCase() + "%";
+        return list("active = true and profile = ?1 and lower(fullName) like ?2 order by fullName asc",
+                br.com.futebol.domain.user.UserProfile.JOGADOR, normalized);
+    }
+
+    /**
      * @param id o ID do usuario
      * @return Optional contendo o usuário se encontrado
      */

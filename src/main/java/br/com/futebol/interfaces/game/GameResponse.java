@@ -23,6 +23,14 @@ public class GameResponse {
 
     private Boolean released;
 
+    private Boolean worstPlayerVotingEnabled;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
+    private OffsetDateTime worstPlayerVotingOpenedAt;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
+    private OffsetDateTime worstPlayerVotingClosedAt;
+
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
     private OffsetDateTime createdAt;
 

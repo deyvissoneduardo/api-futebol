@@ -7,6 +7,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.Set;
 
 @ApplicationScoped
 public class GameConfirmationRepository implements PanacheRepositoryBase<GameConfirmation, UUID> {
@@ -16,7 +17,7 @@ public class GameConfirmationRepository implements PanacheRepositoryBase<GameCon
      * @return lista de confirmacoes do jogo
      */
     public List<GameConfirmation> findByGameId(UUID gameId) {
-        return list("gameId", gameId);
+        return list("gameId = ?1 order by confirmedAt asc", gameId);
     }
 
     /**
@@ -53,6 +54,33 @@ public class GameConfirmationRepository implements PanacheRepositoryBase<GameCon
      */
     public List<GameConfirmation> findByGameIdAndUserRelated(UUID gameId, UUID userId) {
         return list("gameId = ?1 AND (userId = ?2 OR confirmedByUserId = ?2)", gameId, userId);
+    }
+
+    /**
+     * @param id o ID da confirmacao
+     * @return Optional contendo a confirmacao
+     */
+    public Optional<GameConfirmation> findByIdOptional(UUID id) {
+        return find("id = ?1", id).firstResultOptional();
+    }
+
+    /**
+     * @param gameId o ID do jogo
+     * @return lista de confirmações de usuarios cadastrados
+     */
+    public List<GameConfirmation> findEligibleWorstPlayerByGameId(UUID gameId) {
+        return list("gameId = ?1 and isGuest = false order by confirmedName asc", gameId);
+    }
+
+    /**
+     * @param ids conjunto de IDs de confirmacoes
+     * @return lista de confirmações
+     */
+    public List<GameConfirmation> findByIds(Set<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return list("id in ?1", ids);
     }
 }
 

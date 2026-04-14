@@ -9,6 +9,7 @@ import br.com.futebol.infrastructure.user.UserRepository;
 import br.com.futebol.interfaces.user.CreateUserRequest;
 import br.com.futebol.interfaces.user.UpdateUserRequest;
 import br.com.futebol.interfaces.user.UserResponse;
+import br.com.futebol.interfaces.game.GamePlayerSearchResponse;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -55,6 +56,23 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", email));
         return toResponse(user);
+    }
+
+    /**
+     * @param name termo de busca
+     * @return lista de jogadores ativos por nome
+     */
+    public List<GamePlayerSearchResponse> searchActivePlayersByName(String name) {
+        if (name == null || name.trim().isBlank()) {
+            throw new BusinessException("Nome para busca e obrigatorio");
+        }
+
+        return userRepository.findActivePlayersByName(name).stream()
+                .map(user -> GamePlayerSearchResponse.builder()
+                        .userId(user.getId())
+                        .fullName(user.getFullName())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     /**
